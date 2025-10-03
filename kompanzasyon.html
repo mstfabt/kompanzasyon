@@ -1,0 +1,3174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kompanzasyon Tasarım ve Hesaplama Sistemi</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            /* Profesyonel Elektrik/Enerji Teması */
+            --primary-color: #0ea5e9; /* Sky Blue - Elektrik */
+            --primary-dark: #0284c7;
+            --primary-light: #7dd3fc;
+            --secondary-color: #8b5cf6; /* Purple - Güç */
+            --accent-color: #f59e0b; /* Amber - Enerji */
+            --success-color: #10b981; /* Emerald */
+            --warning-color: #f59e0b; /* Amber */
+            --danger-color: #ef4444; /* Red */
+            --info-color: #06b6d4; /* Cyan */
+
+            /* Backgrounds */
+            --dark-bg: #0f172a;
+            --light-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+
+            /* Text Colors */
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --shadow-glow: 0 0 20px rgba(14, 165, 233, 0.3);
+
+            /* Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            padding: 1rem;
+            min-height: 100vh;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -20%;
+            right: -20%;
+            width: 140%;
+            height: 140%;
+            background: radial-gradient(circle at 70% 30%, rgba(14, 165, 233, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            will-change: auto;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            position: relative;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #0284c7 50%, #0ea5e9 100%);
+            color: white;
+            padding: clamp(2rem, 5vw, 3rem) 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            position: relative;
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
+            opacity: 0.95;
+            font-weight: 400;
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .content {
+            padding: clamp(1.5rem, 4vw, 2.5rem);
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .section {
+            margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+            padding: clamp(1.25rem, 3vw, 2rem);
+            background: white;
+            border-radius: var(--radius-xl);
+            border-left: 4px solid var(--primary-color);
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow var(--transition-base), border-left-color var(--transition-base);
+            will-change: box-shadow;
+        }
+
+        .section:hover {
+            box-shadow: var(--shadow-md);
+            border-left-color: var(--secondary-color);
+        }
+
+        .section h2 {
+            color: var(--text-primary);
+            margin-bottom: clamp(1rem, 3vw, 1.5rem);
+            font-size: clamp(1.35rem, 3.5vw, 1.8rem);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.01em;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+            gap: clamp(0.75rem, 2vw, 1.25rem);
+            margin-bottom: 1.25rem;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: clamp(0.85rem, 1.5vw, 0.95rem);
+            word-wrap: break-word;
+        }
+
+        input, select {
+            padding: 0.875rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: clamp(0.9rem, 1.5vw, 0.95rem);
+            transition: all var(--transition-base);
+            width: 100%;
+            max-width: 100%;
+            font-family: inherit;
+            background: white;
+        }
+
+        input:hover, select:hover {
+            border-color: var(--primary-light);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: clamp(0.875rem, 2vw, 1rem) clamp(1.75rem, 3vw, 2.25rem);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: clamp(0.9rem, 1.8vw, 1rem);
+            font-weight: 600;
+            transition: all var(--transition-base);
+            white-space: nowrap;
+            min-width: 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow-sm);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        button.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .equipment-list {
+            margin-top: clamp(1rem, 3vw, 1.5rem);
+        }
+
+        .equipment-item {
+            background: white;
+            padding: clamp(0.875rem, 2vw, 1.125rem);
+            margin-bottom: 0.875rem;
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--border-color);
+            border-left: 3px solid var(--primary-color);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            max-width: 100%;
+            transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+        }
+
+        .equipment-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .equipment-details {
+            flex: 1;
+            min-width: 0;
+            word-wrap: break-word;
+        }
+
+        .equipment-details strong {
+            color: var(--text-primary);
+            font-size: clamp(1rem, 2vw, 1.1rem);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .remove-btn {
+            background: var(--danger-color);
+            padding: clamp(0.5rem, 1.5vw, 0.625rem) clamp(0.75rem, 2vw, 1rem);
+            font-size: clamp(0.85rem, 1.5vw, 0.9rem);
+            white-space: nowrap;
+        }
+
+        .results {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: clamp(1.5rem, 4vw, 2.5rem);
+            border-radius: var(--radius-2xl);
+            margin-top: clamp(2rem, 4vw, 3rem);
+            max-width: 100%;
+            overflow-x: hidden;
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .results h2 {
+            color: var(--text-primary);
+            margin-bottom: clamp(1.5rem, 3vw, 2rem);
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 800;
+            text-align: center;
+            letter-spacing: -0.02em;
+        }
+
+        .result-card {
+            background: white;
+            padding: clamp(1.25rem, 3vw, 1.75rem);
+            border-radius: var(--radius-xl);
+            margin-bottom: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            max-width: 100%;
+            overflow-x: auto;
+            min-width: 0;
+            transition: box-shadow var(--transition-fast);
+            border: 1px solid var(--border-light);
+        }
+
+        .result-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .result-card h3 {
+            color: var(--primary-color);
+            margin-bottom: clamp(0.875rem, 2vw, 1.125rem);
+            font-size: clamp(1.15rem, 3vw, 1.4rem);
+            font-weight: 700;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 0.75rem;
+            letter-spacing: -0.01em;
+            position: relative;
+        }
+
+        .result-card h3::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: var(--secondary-color);
+            border-radius: 2px;
+        }
+
+        .result-item {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: clamp(0.5rem, 1.5vw, 0.75rem) 0;
+            border-bottom: 1px solid var(--border-color);
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: clamp(0.9rem, 1.8vw, 0.95rem);
+            min-width: 0;
+            word-wrap: break-word;
+        }
+
+        .result-value {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: clamp(1rem, 2vw, 1.1rem);
+            text-align: right;
+            min-width: 0;
+            word-wrap: break-word;
+        }
+
+        .stage-card {
+            background: var(--light-bg);
+            padding: clamp(0.875rem, 2.5vw, 1.25rem);
+            margin: clamp(0.625rem, 2vw, 0.875rem) 0;
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--primary-color);
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .stage-card h4 {
+            color: var(--text-primary);
+            font-size: clamp(1rem, 2.5vw, 1.15rem);
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 2px solid var(--warning-color);
+            padding: clamp(0.875rem, 2.5vw, 1.25rem);
+            border-radius: var(--radius-md);
+            margin: clamp(0.875rem, 2.5vw, 1.25rem) 0;
+            color: #856404;
+            font-size: clamp(0.9rem, 1.8vw, 0.95rem);
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border: 2px solid var(--info-color);
+            padding: clamp(0.875rem, 2.5vw, 1.25rem);
+            border-radius: var(--radius-md);
+            margin: clamp(0.875rem, 2.5vw, 1.25rem) 0;
+            color: #0c5460;
+            font-size: clamp(0.9rem, 1.8vw, 0.95rem);
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .group-section {
+            background: white;
+            padding: clamp(1rem, 3vw, 1.5rem);
+            margin: clamp(0.875rem, 2.5vw, 1.25rem) 0;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--primary-color);
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .group-section h3 {
+            color: var(--primary-color);
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            font-weight: 700;
+            margin-bottom: clamp(0.75rem, 2vw, 1rem);
+        }
+
+        .connected-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+
+        .link-btn {
+            background: linear-gradient(135deg, #ffa07a 0%, #ff6347 100%);
+            padding: 6px 12px;
+            font-size: 0.85em;
+            margin-left: 5px;
+        }
+
+        .unlink-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            padding: 6px 12px;
+            font-size: 0.85em;
+            margin-left: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            overflow: auto;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: clamp(1rem, 5vh, 3rem) auto;
+            padding: clamp(1.25rem, 4vw, 2rem);
+            border-radius: var(--radius-xl);
+            width: min(90%, 600px);
+            max-width: 100%;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .modal-header {
+            color: var(--text-primary);
+            margin-bottom: clamp(1rem, 3vw, 1.5rem);
+            font-size: clamp(1.25rem, 3vw, 1.5rem);
+            font-weight: 700;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .connection-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .connection-item:hover {
+            border-color: #667eea;
+            background: #e8ecff;
+        }
+
+        .connection-item.selected {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .chart-container {
+            position: relative;
+            height: clamp(250px, 40vw, 350px);
+            margin: clamp(1rem, 3vw, 1.5rem) 0;
+            background: white;
+            padding: clamp(1rem, 3vw, 1.5rem);
+            border-radius: var(--radius-lg);
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: clamp(0.5rem, 2vw, 0.75rem);
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: clamp(1rem, 3vw, 1.5rem) 0;
+            max-width: 100%;
+        }
+
+        .save-load-section {
+            background: #fff9e6;
+            border: 2px solid var(--warning-color);
+            padding: clamp(1rem, 3vw, 1.25rem);
+            border-radius: var(--radius-md);
+            margin: clamp(0.875rem, 2.5vw, 1.25rem) 0;
+            max-width: 100%;
+        }
+
+        .save-load-section h3 {
+            color: #856404;
+            font-size: clamp(1rem, 2.5vw, 1.15rem);
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            margin-right: 10px;
+            transition: transform 0.2s;
+        }
+
+        .file-label:hover {
+            transform: translateY(-2px);
+        }
+
+        .notification {
+            position: fixed;
+            top: clamp(1.25rem, 3vw, 1.75rem);
+            right: clamp(1.25rem, 3vw, 1.75rem);
+            padding: clamp(1rem, 2.5vw, 1.25rem) clamp(1.5rem, 3vw, 1.875rem);
+            border-radius: var(--radius-lg);
+            color: white;
+            font-weight: 600;
+            font-size: clamp(0.9rem, 1.8vw, 0.95rem);
+            box-shadow: var(--shadow-xl);
+            z-index: 2000;
+            animation: slideInBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: none;
+            max-width: min(90%, 420px);
+            word-wrap: break-word;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .notification::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.6);
+            animation: progress 2.5s linear;
+        }
+
+        @keyframes progress {
+            from { height: 100%; }
+            to { height: 0; }
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, var(--success-color) 0%, #34d399 100%);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, var(--danger-color) 0%, #f87171 100%);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, var(--info-color) 0%, var(--primary-color) 100%);
+        }
+
+        @keyframes slideInBounce {
+            0% {
+                transform: translateX(500px) scale(0.8);
+                opacity: 0;
+            }
+            60% {
+                transform: translateX(-20px) scale(1.05);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3000;
+        }
+
+        .loading-spinner.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(14, 165, 233, 0.2);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+            animation: pulse-text 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-text {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 2999;
+        }
+
+        .loading-overlay.active {
+            display: block;
+        }
+
+        .print-button {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        #designMode {
+            border: 3px solid #667eea;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8ecff 100%);
+        }
+
+        #designMode:focus {
+            border-color: #764ba2;
+            outline: none;
+        }
+
+        .section:has(#designMode) {
+            background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+            border-left-color: #2196f3;
+            border-left-width: 8px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .section, .action-buttons, button, .save-load-section {
+                display: none !important;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            .results {
+                page-break-inside: avoid;
+            }
+
+            header {
+                background: #1e3c72 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: clamp(1rem, 3vw, 1.25rem);
+            }
+
+            .result-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .result-value {
+                text-align: left;
+                margin-top: 0.25rem;
+            }
+
+            .equipment-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .remove-btn, .link-btn, .unlink-btn {
+                align-self: flex-end;
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+
+            .modal-content {
+                width: min(95%, 100%);
+                margin: 1rem auto;
+                padding: 1.25rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-buttons button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .notification {
+                left: 1rem;
+                right: 1rem;
+                max-width: calc(100% - 2rem);
+            }
+
+            h1 {
+                letter-spacing: -0.03em;
+            }
+
+            .result-card h3 {
+                letter-spacing: -0.02em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Kompanzasyon Tasarım ve Hesaplama Sistemi</h1>
+            <p class="subtitle">Harmonikler ve Reaktif Güç Kompanzasyonu - Profesyonel Hesaplama Aracı</p>
+        </header>
+
+        <div class="content">
+            <!-- Sistem Parametreleri -->
+            <div class="section">
+                <h2>🔧 Sistem Parametreleri</h2>
+
+                <!-- Tasarım Modu Seçimi -->
+                <div class="input-group" style="margin-bottom: 25px;">
+                    <div class="input-field" style="grid-column: 1 / -1;">
+                        <label style="font-size: 1.1em; color: #667eea; margin-bottom: 10px;">⚙️ Tasarım Modu</label>
+                        <select id="designMode" onchange="updateDesignMode()" style="font-size: 1em; padding: 12px; font-weight: 600;">
+                            <option value="new">🆕 Sıfırdan Yeni Sistem Tasarımı</option>
+                            <option value="upgrade">🔄 Mevcut Sistemi Geliştirme</option>
+                            <option value="powerBased">⚡ Sadece Aktif Güç Bazlı Hesaplama</option>
+                        </select>
+                        <small id="modeDescription" style="display: block; margin-top: 8px; color: #666; font-weight: normal;">
+                            Mevcut Cos φ değerini dikkate almadan, sadece motorlar ve cihazlar üzerinden tam sistem tasarımı yapılır.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-field">
+                        <label>Sistem Voltajı (V)</label>
+                        <input type="number" id="systemVoltage" value="400" placeholder="Örn: 400">
+                    </div>
+                    <div class="input-field">
+                        <label>Sistem Frekansı (Hz)</label>
+                        <input type="number" id="systemFrequency" value="50" placeholder="Örn: 50">
+                    </div>
+                    <div class="input-field" id="currentPFField">
+                        <label>Mevcut Cos φ <span style="color: #999;">(Opsiyonel - Yeni tasarımda kullanılmaz)</span></label>
+                        <input type="number" id="currentPowerFactor" value="0.7" step="0.01" min="0" max="1" placeholder="Örn: 0.7" disabled>
+                    </div>
+                    <div class="input-field">
+                        <label>Hedef Cos φ</label>
+                        <input type="number" id="targetPowerFactor" value="0.95" step="0.01" min="0" max="1" placeholder="Örn: 0.95">
+                    </div>
+                </div>
+
+                <!-- Enerji Maliyeti ve ROI Parametreleri -->
+                <div class="input-group" style="background: #e8f5e9; padding: clamp(0.875rem, 2.5vw, 1.25rem); border-radius: var(--radius-md); margin-top: clamp(0.875rem, 2.5vw, 1.25rem);">
+                    <div class="input-field" style="grid-column: 1 / -1;">
+                        <label style="font-size: clamp(1rem, 2.2vw, 1.05rem); color: #2e7d32; font-weight: 600;">💰 Enerji Maliyeti ve ROI Parametreleri</label>
+                        <small style="display: block; margin-top: 5px; color: #666; font-size: clamp(0.85rem, 1.8vw, 0.9rem);">Geri ödeme süresi hesaplaması için enerji maliyeti ve çalışma saati bilgilerini girin.</small>
+                    </div>
+                    <div class="input-field">
+                        <label>⚡ Elektrik Birim Fiyatı (TL/kWh)</label>
+                        <input type="number" id="electricityPrice" value="3.5" step="0.1" min="0" placeholder="Örn: 3.5">
+                        <small style="color: #666; font-size: clamp(0.8rem, 1.6vw, 0.85rem); display: block; margin-top: 4px;">Ortalama sanayi: 3-4 TL/kWh</small>
+                    </div>
+                    <div class="input-field">
+                        <label>⏱️ Yıllık Çalışma Saati</label>
+                        <input type="number" id="operatingHours" value="6000" step="100" min="0" placeholder="Örn: 6000">
+                        <small style="color: #666; font-size: clamp(0.8rem, 1.6vw, 0.85rem); display: block; margin-top: 4px;">3 vardiya: 7000-8000 saat/yıl</small>
+                    </div>
+                </div>
+
+                <!-- Aktif Güç Bazlı Hesaplama için Ek Alan -->
+                <div id="powerBasedFields" style="display: none; margin-top: 20px;">
+                    <div class="info">
+                        <strong>ℹ️ Aktif Güç Bazlı Hesaplama Modu</strong><br>
+                        Bu modda sadece toplam aktif güç değerini girerek, motor ve cihaz eklemeden hızlı kompanzasyon hesabı yapabilirsiniz.
+                        <strong>Saha arızalarında ideal!</strong> 📱
+                    </div>
+
+                    <!-- Mevcut Cos φ Bilgisi Var mı? -->
+                    <div class="input-group" style="margin-top: 15px; background: #fff9e6; padding: 15px; border-radius: 8px;">
+                        <div class="input-field" style="grid-column: 1 / -1;">
+                            <label style="font-size: 1em; color: #667eea;">📊 Mevcut Cos φ Durumu</label>
+                            <select id="powerBasedCosPhiMode" onchange="togglePowerBasedCosPhiMode()" style="font-size: 0.95em; padding: 10px;">
+                                <option value="known">✅ Mevcut Cos φ Biliniyor (Sahada ölçtüm)</option>
+                                <option value="unknown">❓ Mevcut Cos φ Bilinmiyor (Tahmin et)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="margin-top: 15px;">
+                        <div class="input-field">
+                            <label>📈 Toplam Aktif Güç (kW)</label>
+                            <input type="number" id="totalActivePowerInput" placeholder="Örn: 150" step="0.1">
+                        </div>
+                        <div class="input-field" id="powerBasedCurrentPFField">
+                            <label>📊 Mevcut Cos φ <span style="color: #28a745;">(Ölçülen)</span></label>
+                            <input type="number" id="powerBasedCurrentPF" value="0.7" step="0.01" min="0" max="1" placeholder="Örn: 0.7">
+                        </div>
+                        <div class="input-field" id="powerBasedEstimatedPFField" style="display: none;">
+                            <label>🔮 Tahmini Mevcut Cos φ</label>
+                            <select id="powerBasedEstimatedPF">
+                                <option value="0.5">Çok Düşük (0.50) - Kompanzasyonsuz Endüktif Yük</option>
+                                <option value="0.6">Düşük (0.60) - Motor Ağırlıklı</option>
+                                <option value="0.7" selected>Orta (0.70) - Karışık Yük</option>
+                                <option value="0.8">İyi (0.80) - Az Kompanzasyonlu</option>
+                                <option value="0.85">Çok İyi (0.85) - Kısmi Kompanzasyonlu</option>
+                            </select>
+                        </div>
+                        <div class="input-field">
+                            <label>🌊 Harmonik Yükü</label>
+                            <select id="powerBasedHarmonicLoad">
+                                <option value="0">Yok/Düşük (THD < 15%) - Sadece Motorlar</option>
+                                <option value="20">Orta (THD 15-25%) - Az İnvertör</option>
+                                <option value="35" selected>Yüksek (THD 25-40%) - İnvertörler Var</option>
+                                <option value="50">Çok Yüksek (THD > 40%) - Çok İnvertör/VFD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Reaktif Güç Girişi (Opsiyonel - Cos bilinmiyorsa) -->
+                    <div id="powerBasedReactiveField" style="display: none; margin-top: 15px;">
+                        <div class="warning" style="background: #e8f5e9; border-color: #4caf50;">
+                            <strong>💡 İPUCU:</strong> Eğer sayaçtan reaktif güç (kVAr) değerini okuyabiliyorsanız,
+                            buraya girebilirsiniz. Daha doğru hesaplama yapar!
+                        </div>
+                        <div class="input-group" style="margin-top: 10px;">
+                            <div class="input-field">
+                                <label>📉 Mevcut Reaktif Güç (kVAr) <span style="color: #999;">(Opsiyonel)</span></label>
+                                <input type="number" id="currentReactivePowerInput" placeholder="Sayaçtan okunan değer" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Motor Ekle -->
+            <div class="section">
+                <h2>🔌 Motor Ekle</h2>
+                <div class="input-group">
+                    <div class="input-field">
+                        <label>Motor Adı</label>
+                        <input type="text" id="motorName" placeholder="Örn: Motor 1">
+                    </div>
+                    <div class="input-field">
+                        <label>Motor Gücü (kW)</label>
+                        <input type="number" id="motorPower" placeholder="Örn: 15">
+                    </div>
+                    <div class="input-field">
+                        <label>Motor Adedi</label>
+                        <input type="number" id="motorCount" value="1" min="1" placeholder="Örn: 2">
+                    </div>
+                    <div class="input-field">
+                        <label>Motor Cos φ</label>
+                        <input type="number" id="motorCosPhi" value="0.85" step="0.01" min="0" max="1">
+                    </div>
+                    <div class="input-field">
+                        <label>Motor Verimi (%)</label>
+                        <input type="number" id="motorEfficiency" value="90" min="0" max="100" placeholder="Örn: 90">
+                    </div>
+                    <div class="input-field">
+                        <label>Çalışma Rejimi</label>
+                        <select id="motorRegime">
+                            <option value="continuous">Sürekli</option>
+                            <option value="intermittent">Aralıklı</option>
+                            <option value="heavy">Ağır Yük</option>
+                        </select>
+                    </div>
+                    <div class="input-field">
+                        <label>Yük Faktörü (%)</label>
+                        <input type="number" id="motorLoadFactor" value="75" min="0" max="100" placeholder="Örn: 75">
+                    </div>
+                    <div class="input-field">
+                        <label>İnvertör/SS ile Kontrol</label>
+                        <select id="motorControlDevice">
+                            <option value="none">DOL (Direkt)</option>
+                            <option value="inverter">İnvertör ile</option>
+                            <option value="softstarter">Soft Starter ile</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="addMotor()">➕ Motor Ekle</button>
+                <div class="equipment-list" id="motorList"></div>
+            </div>
+
+            <!-- İnvertör/Soft Starter Ekle -->
+            <div class="section">
+                <h2>📟 İnvertör / Soft Starter Ekle</h2>
+                <div class="input-group">
+                    <div class="input-field">
+                        <label>Cihaz Tipi</label>
+                        <select id="deviceType" onchange="updateDeviceDefaults()">
+                            <option value="inverter">İnvertör (VFD)</option>
+                            <option value="softstarter">Soft Starter</option>
+                        </select>
+                    </div>
+                    <div class="input-field">
+                        <label>Cihaz Adı</label>
+                        <input type="text" id="deviceName" placeholder="Örn: İnvertör 1">
+                    </div>
+                    <div class="input-field">
+                        <label>Cihaz Gücü (kW)</label>
+                        <input type="number" id="devicePower" placeholder="Örn: 22">
+                    </div>
+                    <div class="input-field">
+                        <label>Adedi</label>
+                        <input type="number" id="deviceCount" value="1" min="1">
+                    </div>
+                    <div class="input-field">
+                        <label>THD (%) - Harmonik Bozulması</label>
+                        <input type="number" id="deviceTHD" value="35" placeholder="İnvertör: 30-50, SS: 5-15">
+                    </div>
+                    <div class="input-field">
+                        <label>Çalışma Frekansı (%)</label>
+                        <input type="number" id="deviceFrequency" value="80" min="0" max="100" placeholder="50Hz bazlı %">
+                    </div>
+                    <div class="input-field">
+                        <label>Bağlı Motor Seç</label>
+                        <button class="link-btn" onclick="openMotorSelector()">🔗 Motor Bağla</button>
+                    </div>
+                </div>
+                <button onclick="addDevice()">➕ Cihaz Ekle</button>
+                <div class="equipment-list" id="deviceList"></div>
+            </div>
+
+            <!-- Gruplama -->
+            <div class="section">
+                <h2>📊 Ekipman Gruplama</h2>
+                <p style="margin-bottom: 15px; color: #666;">Ekipmanları grup bazında organize edin (opsiyonel)</p>
+                <div class="input-group">
+                    <div class="input-field">
+                        <label>Grup Adı</label>
+                        <input type="text" id="groupName" placeholder="Örn: Üretim Hattı 1">
+                    </div>
+                </div>
+                <button onclick="createGroup()">➕ Grup Oluştur</button>
+                <div id="groupsList"></div>
+            </div>
+
+            <!-- Kaydet/Yükle Bölümü -->
+            <div class="save-load-section">
+                <h3>💾 Veri Yönetimi</h3>
+                <div class="action-buttons">
+                    <button onclick="saveToLocalStorage()">💾 Tarayıcıya Kaydet</button>
+                    <button onclick="loadFromLocalStorage()">📂 Tarayıcıdan Yükle</button>
+                    <button onclick="exportToJSON()">📥 JSON İndir</button>
+                    <label for="jsonFileInput" class="file-label">📤 JSON Yükle</label>
+                    <input type="file" id="jsonFileInput" class="file-input" accept=".json" onchange="importFromJSON(event)">
+                </div>
+            </div>
+
+            <!-- Hesapla Butonu -->
+            <div class="action-buttons">
+                <button class="success" onclick="calculate()" style="font-size: 1.2em; padding: 15px 40px;">
+                    🧮 Kompanzasyon Hesapla
+                </button>
+                <button class="secondary" onclick="resetAll()">
+                    🔄 Tümünü Sıfırla
+                </button>
+            </div>
+
+            <!-- Sonuçlar -->
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Loading Overlay and Spinner -->
+    <div id="loadingOverlay" class="loading-overlay"></div>
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <div class="loading-text">⚡ Hesaplama yapılıyor...</div>
+    </div>
+
+    <!-- Modal for Motor Selection -->
+    <div id="motorSelectorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeMotorSelector()">&times;</span>
+                <h2>Motor Seçimi</h2>
+            </div>
+            <div id="motorSelectionList"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="confirmMotorSelection()">✓ Seçimi Onayla</button>
+                <button class="secondary" onclick="closeMotorSelector()">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let motors = [];
+        let devices = [];
+        let groups = [];
+        let selectedMotorForLink = null;
+        let currentDeviceForLink = null;
+        let powerChart = null;
+        let harmonicChart = null;
+        let lastResults = null;
+
+        // localStorage kullanılabilir mi kontrol et
+        function isLocalStorageAvailable() {
+            try {
+                const test = '__localStorage_test__';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Sayfa yüklendiğinde otomatik yükleme
+        window.addEventListener('load', () => {
+            try {
+                if (isLocalStorageAvailable()) {
+                    const savedData = localStorage.getItem('kompanzasyonData');
+                    if (savedData) {
+                        const autoLoad = confirm('Kaydedilmiş veri bulundu. Yüklemek ister misiniz?');
+                        if (autoLoad) {
+                            loadFromLocalStorage();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('localStorage kullanılamıyor:', e);
+            }
+            updateDesignMode(); // Başlangıçta modu güncelle
+        });
+
+        // Tasarım modu değiştiğinde
+        function updateDesignMode() {
+            const mode = document.getElementById('designMode').value;
+            const currentPFField = document.getElementById('currentPFField');
+            const currentPFInput = document.getElementById('currentPowerFactor');
+            const powerBasedFields = document.getElementById('powerBasedFields');
+            const modeDescription = document.getElementById('modeDescription');
+
+            // Güvenli section seçimi
+            const sections = document.querySelectorAll('.section');
+            if (sections.length < 4) {
+                console.error('Yeterli section bulunamadı');
+                return;
+            }
+            const motorSection = sections[1]; // Motor bölümü
+            const deviceSection = sections[2]; // Cihaz bölümü
+            const groupSection = sections[3]; // Grup bölümü
+
+            if (mode === 'new') {
+                // Sıfırdan yeni sistem
+                modeDescription.innerHTML = '🆕 Mevcut Cos φ değerini dikkate almadan, sadece motorlar ve cihazlar üzerinden tam sistem tasarımı yapılır.';
+                currentPFInput.disabled = true;
+                currentPFInput.style.opacity = '0.5';
+                powerBasedFields.style.display = 'none';
+                motorSection.style.display = 'block';
+                deviceSection.style.display = 'block';
+                groupSection.style.display = 'block';
+                currentPFField.querySelector('label').innerHTML = 'Mevcut Cos φ <span style="color: #999;">(Opsiyonel - Yeni tasarımda kullanılmaz)</span>';
+            } else if (mode === 'upgrade') {
+                // Mevcut sistemi geliştirme
+                modeDescription.innerHTML = '🔄 Mevcut Cos φ değeri kullanılarak, hedefe ulaşmak için <strong>sadece eksik olan kondansatör gücü</strong> hesaplanır.';
+                currentPFInput.disabled = false;
+                currentPFInput.style.opacity = '1';
+                powerBasedFields.style.display = 'none';
+                motorSection.style.display = 'block';
+                deviceSection.style.display = 'block';
+                groupSection.style.display = 'block';
+                currentPFField.querySelector('label').innerHTML = 'Mevcut Cos φ <span style="color: #28a745;">(Zorunlu)</span>';
+            } else if (mode === 'powerBased') {
+                // Aktif güç bazlı
+                modeDescription.innerHTML = '⚡ Sadece toplam aktif güç değeri ile hızlı kompanzasyon hesabı. Motor ve cihaz eklemeye gerek yok. <strong>Saha arızaları için ideal!</strong>';
+                currentPFInput.disabled = true;
+                currentPFInput.style.opacity = '0.5';
+                powerBasedFields.style.display = 'block';
+                motorSection.style.display = 'none';
+                deviceSection.style.display = 'none';
+                groupSection.style.display = 'none';
+                currentPFField.querySelector('label').innerHTML = 'Mevcut Cos φ <span style="color: #999;">(Kullanılmayacak)</span>';
+            }
+        }
+
+        // Aktif güç bazlı Cos φ modu değişimi
+        function togglePowerBasedCosPhiMode() {
+            const mode = document.getElementById('powerBasedCosPhiMode').value;
+            const currentPFField = document.getElementById('powerBasedCurrentPFField');
+            const estimatedPFField = document.getElementById('powerBasedEstimatedPFField');
+            const reactiveField = document.getElementById('powerBasedReactiveField');
+
+            if (mode === 'known') {
+                // Cos φ biliniyor
+                currentPFField.style.display = 'block';
+                estimatedPFField.style.display = 'none';
+                reactiveField.style.display = 'none';
+            } else {
+                // Cos φ bilinmiyor
+                currentPFField.style.display = 'none';
+                estimatedPFField.style.display = 'block';
+                reactiveField.style.display = 'block';
+            }
+        }
+
+        function addMotor() {
+            const name = document.getElementById('motorName').value || `Motor ${motors.length + 1}`;
+            const power = parseFloat(document.getElementById('motorPower').value);
+            const count = parseInt(document.getElementById('motorCount').value) || 1;
+            const cosPhi = parseFloat(document.getElementById('motorCosPhi').value);
+            const efficiency = parseFloat(document.getElementById('motorEfficiency').value);
+            const regime = document.getElementById('motorRegime').value;
+            const loadFactor = parseFloat(document.getElementById('motorLoadFactor').value);
+            const controlDevice = document.getElementById('motorControlDevice').value;
+
+            if (!power || power <= 0) {
+                showNotification('Lütfen geçerli bir motor gücü girin!', 'error');
+                return;
+            }
+
+            if (cosPhi < 0 || cosPhi > 1) {
+                showNotification('Cos φ değeri 0-1 arasında olmalıdır!', 'error');
+                return;
+            }
+
+            if (efficiency < 0 || efficiency > 100) {
+                showNotification('Verim değeri 0-100 arasında olmalıdır!', 'error');
+                return;
+            }
+
+            const motorId = 'motor_' + Date.now();
+            motors.push({
+                id: motorId,
+                name,
+                power,
+                count,
+                cosPhi,
+                efficiency,
+                regime,
+                loadFactor,
+                controlDevice,
+                linkedDevice: null,
+                type: 'motor'
+            });
+            updateMotorList();
+            clearMotorInputs();
+            showNotification(`${name} başarıyla eklendi`, 'success');
+        }
+
+        function addDevice() {
+            const type = document.getElementById('deviceType').value;
+            const name = document.getElementById('deviceName').value || `${type === 'inverter' ? 'İnvertör' : 'Soft Starter'} ${devices.length + 1}`;
+            const power = parseFloat(document.getElementById('devicePower').value);
+            const count = parseInt(document.getElementById('deviceCount').value) || 1;
+            const thd = parseFloat(document.getElementById('deviceTHD').value);
+            const frequency = parseFloat(document.getElementById('deviceFrequency').value);
+
+            if (!power || power <= 0) {
+                showNotification('Lütfen geçerli bir cihaz gücü girin!', 'error');
+                return;
+            }
+
+            if (thd < 0 || thd > 100) {
+                showNotification('THD değeri 0-100 arasında olmalıdır!', 'error');
+                return;
+            }
+
+            const deviceId = 'device_' + Date.now();
+            devices.push({
+                id: deviceId,
+                name,
+                power,
+                count,
+                thd,
+                frequency,
+                deviceType: type,
+                linkedMotors: [],
+                type: 'device'
+            });
+            updateDeviceList();
+            clearDeviceInputs();
+            showNotification(`${name} başarıyla eklendi`, 'success');
+        }
+
+        function updateDeviceDefaults() {
+            const type = document.getElementById('deviceType').value;
+            if (type === 'inverter') {
+                document.getElementById('deviceTHD').value = 35;
+                document.getElementById('deviceTHD').placeholder = '30-50';
+            } else {
+                document.getElementById('deviceTHD').value = 10;
+                document.getElementById('deviceTHD').placeholder = '5-15';
+            }
+        }
+
+        function updateMotorList() {
+            const list = document.getElementById('motorList');
+            list.innerHTML = motors.map((motor, index) => {
+                const linkedDevice = motor.linkedDevice ? devices.find(d => d.id === motor.linkedDevice) : null;
+                const controlText = motor.controlDevice === 'none' ? 'DOL' :
+                                  motor.controlDevice === 'inverter' ? 'İnvertör ile' : 'Soft Starter ile';
+                return `
+                <div class="equipment-item">
+                    <div class="equipment-details">
+                        <strong>${motor.name}</strong> -
+                        ${motor.power} kW × ${motor.count} adet |
+                        Cos φ: ${motor.cosPhi} |
+                        Verim: ${motor.efficiency}% |
+                        Yük: ${motor.loadFactor}% |
+                        Kontrol: ${controlText}
+                        ${linkedDevice ? `<span class="connected-badge">🔗 Bağlı: ${linkedDevice.name}</span>` : ''}
+                        <br><small style="color: #666;">Rejim: ${motor.regime === 'continuous' ? 'Sürekli' : motor.regime === 'intermittent' ? 'Aralıklı' : 'Ağır Yük'}</small>
+                    </div>
+                    <div>
+                        ${linkedDevice ?
+                            `<button class="unlink-btn" onclick="unlinkMotorFromDevice(${index})">🔓 Bağlantıyı Kes</button>` :
+                            `<button class="link-btn" onclick="linkMotorToDevice(${index})">🔗 Cihaz Bağla</button>`
+                        }
+                        <button class="remove-btn" onclick="removeMotor(${index})">❌ Sil</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function updateDeviceList() {
+            const list = document.getElementById('deviceList');
+            list.innerHTML = devices.map((device, index) => {
+                const linkedMotorNames = device.linkedMotors.map(motorId => {
+                    const motor = motors.find(m => m.id === motorId);
+                    return motor ? motor.name : '';
+                }).filter(n => n).join(', ');
+
+                return `
+                <div class="equipment-item">
+                    <div class="equipment-details">
+                        <strong>${device.name}</strong> -
+                        ${device.power} kW × ${device.count} adet |
+                        THD: ${device.thd}% |
+                        Frekans: ${device.frequency}% |
+                        Tip: ${device.deviceType === 'inverter' ? 'İnvertör (VFD)' : 'Soft Starter'}
+                        ${linkedMotorNames ? `<span class="connected-badge">🔗 Bağlı Motorlar: ${linkedMotorNames}</span>` : ''}
+                    </div>
+                    <button class="remove-btn" onclick="removeDevice(${index})">❌ Sil</button>
+                </div>
+            `}).join('');
+        }
+
+        function removeMotor(index) {
+            const motor = motors[index];
+            // Bağlı cihazdan bağlantıyı kaldır
+            if (motor.linkedDevice) {
+                const device = devices.find(d => d.id === motor.linkedDevice);
+                if (device) {
+                    device.linkedMotors = device.linkedMotors.filter(id => id !== motor.id);
+                }
+            }
+            motors.splice(index, 1);
+            updateMotorList();
+            updateDeviceList();
+        }
+
+        function removeDevice(index) {
+            const device = devices[index];
+            // Bağlı motorlardan bağlantıyı kaldır
+            device.linkedMotors.forEach(motorId => {
+                const motor = motors.find(m => m.id === motorId);
+                if (motor) {
+                    motor.linkedDevice = null;
+                }
+            });
+            devices.splice(index, 1);
+            updateMotorList();
+            updateDeviceList();
+        }
+
+        function linkMotorToDevice(motorIndex) {
+            if (devices.length === 0) {
+                showNotification('Önce bir İnvertör veya Soft Starter ekleyin!', 'error');
+                return;
+            }
+            currentDeviceForLink = motors[motorIndex];
+            openDeviceSelector();
+        }
+
+        function unlinkMotorFromDevice(motorIndex) {
+            const motor = motors[motorIndex];
+            if (motor.linkedDevice) {
+                const device = devices.find(d => d.id === motor.linkedDevice);
+                if (device) {
+                    device.linkedMotors = device.linkedMotors.filter(id => id !== motor.id);
+                }
+                motor.linkedDevice = null;
+            }
+            updateMotorList();
+            updateDeviceList();
+        }
+
+        function openMotorSelector() {
+            if (motors.length === 0) {
+                showNotification('Önce motor ekleyin!', 'error');
+                return;
+            }
+
+            const modal = document.getElementById('motorSelectorModal');
+            const list = document.getElementById('motorSelectionList');
+
+            list.innerHTML = motors.map((motor, index) => `
+                <div class="connection-item" onclick="selectMotorForLink('${motor.id}')" id="motor-select-${motor.id}">
+                    <strong>${motor.name}</strong> - ${motor.power} kW × ${motor.count} adet
+                    ${motor.linkedDevice ? '<span class="connected-badge">Zaten Bağlı</span>' : ''}
+                </div>
+            `).join('');
+
+            modal.style.display = 'block';
+        }
+
+        function openDeviceSelector() {
+            const modal = document.getElementById('motorSelectorModal');
+            const list = document.getElementById('motorSelectionList');
+
+            list.innerHTML = devices.map((device, index) => `
+                <div class="connection-item" onclick="selectDeviceForLink('${device.id}')" id="device-select-${device.id}">
+                    <strong>${device.name}</strong> - ${device.power} kW (${device.deviceType === 'inverter' ? 'İnvertör' : 'Soft Starter'})
+                </div>
+            `).join('');
+
+            modal.style.display = 'block';
+        }
+
+        function selectMotorForLink(motorId) {
+            selectedMotorForLink = motorId;
+            document.querySelectorAll('.connection-item').forEach(el => el.classList.remove('selected'));
+            document.getElementById('motor-select-' + motorId).classList.add('selected');
+        }
+
+        function selectDeviceForLink(deviceId) {
+            if (!currentDeviceForLink) return;
+
+            const motor = currentDeviceForLink;
+            const device = devices.find(d => d.id === deviceId);
+
+            if (motor.linkedDevice) {
+                const oldDevice = devices.find(d => d.id === motor.linkedDevice);
+                if (oldDevice) {
+                    oldDevice.linkedMotors = oldDevice.linkedMotors.filter(id => id !== motor.id);
+                }
+            }
+
+            motor.linkedDevice = deviceId;
+            if (!device.linkedMotors.includes(motor.id)) {
+                device.linkedMotors.push(motor.id);
+            }
+
+            // Motor kontrolü otomatik güncelle
+            motor.controlDevice = device.deviceType === 'inverter' ? 'inverter' : 'softstarter';
+
+            updateMotorList();
+            updateDeviceList();
+            closeMotorSelector();
+            currentDeviceForLink = null;
+        }
+
+        function confirmMotorSelection() {
+            if (!selectedMotorForLink) {
+                showNotification('Lütfen bir motor seçin!', 'error');
+                return;
+            }
+            closeMotorSelector();
+        }
+
+        function closeMotorSelector() {
+            document.getElementById('motorSelectorModal').style.display = 'none';
+            selectedMotorForLink = null;
+            currentDeviceForLink = null;
+        }
+
+        function clearMotorInputs() {
+            document.getElementById('motorName').value = '';
+            document.getElementById('motorPower').value = '';
+            document.getElementById('motorCount').value = '1';
+            document.getElementById('motorEfficiency').value = '90';
+            document.getElementById('motorLoadFactor').value = '75';
+            document.getElementById('motorControlDevice').value = 'none';
+        }
+
+        function clearDeviceInputs() {
+            document.getElementById('deviceName').value = '';
+            document.getElementById('devicePower').value = '';
+            document.getElementById('deviceCount').value = '1';
+            document.getElementById('deviceFrequency').value = '80';
+        }
+
+        function createGroup() {
+            const groupName = document.getElementById('groupName').value;
+            if (!groupName) {
+                showNotification('Lütfen grup adı girin!', 'error');
+                return;
+            }
+
+            groups.push({ name: groupName, items: [] });
+            updateGroupsList();
+            document.getElementById('groupName').value = '';
+            showNotification(`Grup "${groupName}" oluşturuldu`, 'success');
+        }
+
+        function updateGroupsList() {
+            const groupsList = document.getElementById('groupsList');
+            if (groups.length === 0) return;
+
+            groupsList.innerHTML = groups.map((group, index) => `
+                <div class="group-section">
+                    <h3>📁 ${group.name}</h3>
+                    <p style="color: #666; margin-bottom: 10px;">Bu grup için ekipman eklenebilir (manuel düzenleme için)</p>
+                    <button class="remove-btn" onclick="removeGroup(${index})">🗑️ Grubu Sil</button>
+                </div>
+            `).join('');
+        }
+
+        function removeGroup(index) {
+            groups.splice(index, 1);
+            updateGroupsList();
+        }
+
+        function calculate() {
+            const designMode = document.getElementById('designMode').value;
+            const systemVoltage = parseFloat(document.getElementById('systemVoltage').value);
+            const systemFrequency = parseFloat(document.getElementById('systemFrequency').value);
+            const targetPF = parseFloat(document.getElementById('targetPowerFactor').value);
+
+            // Mod bazlı validasyon
+            if (designMode === 'powerBased') {
+                // Aktif güç bazlı hesaplama
+                const totalActivePowerInput = parseFloat(document.getElementById('totalActivePowerInput').value);
+                const powerBasedHarmonicLoad = parseFloat(document.getElementById('powerBasedHarmonicLoad').value);
+                const cosPhiMode = document.getElementById('powerBasedCosPhiMode').value;
+
+                if (!totalActivePowerInput || totalActivePowerInput <= 0) {
+                    showNotification('Lütfen toplam aktif güç değerini girin!', 'error');
+                    return;
+                }
+
+                let powerBasedCurrentPF;
+                let currentReactivePowerDirect = null;
+
+                if (cosPhiMode === 'known') {
+                    // Cos φ biliniyor
+                    powerBasedCurrentPF = parseFloat(document.getElementById('powerBasedCurrentPF').value);
+
+                    if (powerBasedCurrentPF < 0 || powerBasedCurrentPF > 1) {
+                        showNotification('Mevcut Cos φ değeri 0-1 arasında olmalıdır!', 'error');
+                        return;
+                    }
+                } else {
+                    // Cos φ bilinmiyor - tahmin veya reaktif güç girişi
+                    const reactiveInput = parseFloat(document.getElementById('currentReactivePowerInput').value);
+
+                    if (reactiveInput && reactiveInput > 0) {
+                        // Reaktif güç girilmiş, Cos φ hesapla
+                        currentReactivePowerDirect = reactiveInput;
+                        const apparentPower = Math.sqrt(Math.pow(totalActivePowerInput, 2) + Math.pow(reactiveInput, 2));
+                        powerBasedCurrentPF = totalActivePowerInput / apparentPower;
+                    } else {
+                        // Tahmini Cos φ kullan
+                        powerBasedCurrentPF = parseFloat(document.getElementById('powerBasedEstimatedPF').value);
+                    }
+                }
+
+                if (targetPF < 0 || targetPF > 1) {
+                    showNotification('Hedef Cos φ değeri 0-1 arasında olmalıdır!', 'error');
+                    return;
+                }
+
+                if (targetPF <= powerBasedCurrentPF) {
+                    showNotification('Hedef Cos φ, mevcut Cos φ değerinden büyük olmalıdır!', 'error');
+                    return;
+                }
+
+                showLoading();
+                setTimeout(() => {
+                    calculatePowerBased(totalActivePowerInput, powerBasedCurrentPF, targetPF, powerBasedHarmonicLoad, systemVoltage, systemFrequency, cosPhiMode, currentReactivePowerDirect);
+                    hideLoading();
+                    showNotification('Hesaplama tamamlandı!', 'success');
+                }, 200);
+                return;
+            }
+
+            // Motor/Cihaz bazlı hesaplama
+            if (motors.length === 0 && devices.length === 0) {
+                showNotification('Lütfen en az bir motor veya cihaz ekleyin!', 'error');
+                return;
+            }
+
+            const currentPF = parseFloat(document.getElementById('currentPowerFactor').value);
+
+            // Validasyonlar
+            if (targetPF < 0 || targetPF > 1) {
+                showNotification('Hedef Cos φ değeri 0-1 arasında olmalıdır!', 'error');
+                return;
+            }
+
+            if (designMode === 'upgrade') {
+                // Geliştirme modunda mevcut Cos φ kontrol et
+                if (currentPF < 0 || currentPF > 1) {
+                    showNotification('Mevcut Cos φ değeri 0-1 arasında olmalıdır!', 'error');
+                    return;
+                }
+
+                if (targetPF <= currentPF) {
+                    showNotification('Hedef Cos φ, mevcut Cos φ değerinden büyük olmalıdır!', 'error');
+                    return;
+                }
+            }
+
+            showLoading();
+
+            // Gelişmiş motor analizi
+            let totalActivePower = 0;
+            let totalReactivePowerMotors = 0;
+            let motorConnections = [];
+
+            motors.forEach(motor => {
+                // Gerçek güç tüketimi (yük faktörü ve verim dahil)
+                const actualPower = motor.power * (motor.loadFactor / 100) * motor.count;
+                const inputPower = actualPower / (motor.efficiency / 100);
+
+                totalActivePower += inputPower;
+
+                // Motor reaktif gücü
+                const motorReactivePower = inputPower * Math.tan(Math.acos(motor.cosPhi));
+                totalReactivePowerMotors += motorReactivePower;
+
+                // Bağlı cihaz kontrolü
+                if (motor.linkedDevice) {
+                    const linkedDevice = devices.find(d => d.id === motor.linkedDevice);
+                    if (linkedDevice) {
+                        motorConnections.push({
+                            motor: motor,
+                            device: linkedDevice,
+                            powerReduction: linkedDevice.deviceType === 'inverter' ?
+                                (100 - linkedDevice.frequency) / 100 : 0
+                        });
+                    }
+                }
+            });
+
+            // Cihaz güç hesaplamaları (bağlı olmayanlar)
+            devices.forEach(device => {
+                const linkedMotorPower = device.linkedMotors.reduce((sum, motorId) => {
+                    const motor = motors.find(m => m.id === motorId);
+                    return motor ? sum + motor.power * motor.count : sum;
+                }, 0);
+
+                // Eğer bağlı motor yoksa cihaz gücünü ekle
+                if (linkedMotorPower === 0) {
+                    totalActivePower += device.power * device.count;
+                }
+            });
+
+            // Harmonik analizi (tüm cihazlar dahil)
+            let totalTHD = 0;
+            let totalHarmonicPower = 0;
+            let harmonicDeviceCount = 0;
+
+            devices.forEach(device => {
+                const deviceTotalPower = device.power * device.count;
+                totalTHD += device.thd * deviceTotalPower;
+                totalHarmonicPower += deviceTotalPower;
+
+                if (device.deviceType === 'inverter') {
+                    harmonicDeviceCount += device.count;
+                }
+            });
+
+            const avgTHD = totalHarmonicPower > 0 ? totalTHD / totalHarmonicPower : 0;
+
+            // Reaktif güç hesaplama (mod bazlı)
+            let currentReactivePower, targetReactivePower, requiredCapacitivePower;
+            let calculatedFromMotors = false;
+
+            if (designMode === 'new') {
+                // Sıfırdan tasarım: Motorların kendi cos φ değerlerinden hesapla
+                currentReactivePower = totalReactivePowerMotors;
+                targetReactivePower = totalActivePower * Math.tan(Math.acos(targetPF));
+                requiredCapacitivePower = currentReactivePower - targetReactivePower;
+                calculatedFromMotors = true;
+            } else {
+                // Geliştirme: Mevcut Cos φ kullan
+                currentReactivePower = totalActivePower * Math.tan(Math.acos(currentPF));
+                targetReactivePower = totalActivePower * Math.tan(Math.acos(targetPF));
+                requiredCapacitivePower = currentReactivePower - targetReactivePower;
+            }
+
+            // İnvertörler için ek reaktif güç düzeltmesi
+            motorConnections.forEach(conn => {
+                if (conn.device.deviceType === 'inverter') {
+                    // İnvertörler genellikle reaktif güç tüketir
+                    const inverterReactivePower = conn.device.power * 0.3; // yaklaşık %30
+                    requiredCapacitivePower += inverterReactivePower * conn.device.count;
+                }
+            });
+
+            // Harmonik kompanzasyonu için güvenlik faktörü
+            // THD yüksekse kondansatör gücüne hafif güvenlik marjı ekle
+            const harmonicFactor = avgTHD > 15 ? 1 + (avgTHD / 100) * 0.3 : 1;
+            const adjustedCapacitivePower = requiredCapacitivePower * harmonicFactor;
+
+            // Reaktör gereksinimi (THD > 25% ise zorunlu)
+            const reactorRequired = avgTHD > 25;
+            const reactorPercentage = avgTHD > 40 ? 0.14 : avgTHD > 25 ? 0.07 : 0;
+            const reactorPower = adjustedCapacitivePower * reactorPercentage;
+
+            // Kademe sayısı belirleme
+            const stageCount = determineStageCount(totalActivePower, motors, devices);
+
+            // Kademe boyutları
+            const stages = calculateStages(adjustedCapacitivePower, stageCount, motors, devices, avgTHD, systemVoltage);
+
+            // Kondansatör tipleri
+            const capacitorType = avgTHD > 40 ? 'Anti-Harmonik Ağır Tip (14% Reaktör)' :
+                                avgTHD > 25 ? 'Anti-Harmonik (7% Reaktör)' :
+                                avgTHD > 15 ? 'Harmonik Önleyici (Filtreli)' : 'Standart';
+
+            // Ana bara hesaplamaları
+            const totalPanelCurrent = stages.reduce((sum, stage) => sum + stage.current, 0);
+            const mainBusbarCrossSection = calculateCableCrossSection(totalPanelCurrent);
+            const mainMCBRating = calculateMCBRating(totalPanelCurrent);
+
+            displayResults({
+                systemVoltage,
+                systemFrequency,
+                totalActivePower,
+                currentPF: designMode === 'new' ? null : currentPF,
+                targetPF,
+                currentReactivePower,
+                targetReactivePower,
+                requiredCapacitivePower,
+                adjustedCapacitivePower,
+                avgTHD,
+                reactorRequired,
+                reactorPower,
+                reactorPercentage: reactorPercentage * 100,
+                capacitorType,
+                stageCount,
+                stages,
+                motorCount: motors.reduce((sum, m) => sum + m.count, 0),
+                deviceCount: devices.reduce((sum, d) => sum + d.count, 0),
+                connectedMotors: motorConnections.length,
+                totalHarmonicPower,
+                motorConnections,
+                totalPanelCurrent,
+                mainBusbarCrossSection,
+                mainMCBRating,
+                designMode,
+                calculatedFromMotors
+            });
+        }
+
+        // Aktif güç bazlı hızlı hesaplama
+        function calculatePowerBased(totalActivePower, currentPF, targetPF, avgTHD, systemVoltage, systemFrequency, cosPhiMode, currentReactivePowerDirect) {
+            // Reaktif güç hesaplama
+            let currentReactivePower;
+
+            if (currentReactivePowerDirect !== null && currentReactivePowerDirect > 0) {
+                // Direkt reaktif güç girilmiş
+                currentReactivePower = currentReactivePowerDirect;
+            } else {
+                // Cos φ'den hesapla
+                currentReactivePower = totalActivePower * Math.tan(Math.acos(currentPF));
+            }
+
+            const targetReactivePower = totalActivePower * Math.tan(Math.acos(targetPF));
+            let requiredCapacitivePower = currentReactivePower - targetReactivePower;
+
+            // Harmonik kompanzasyonu için güvenlik faktörü
+            const harmonicFactor = avgTHD > 15 ? 1 + (avgTHD / 100) * 0.3 : 1;
+            const adjustedCapacitivePower = requiredCapacitivePower * harmonicFactor;
+
+            // Reaktör gereksinimi
+            const reactorRequired = avgTHD > 25;
+            const reactorPercentage = avgTHD > 40 ? 14 : avgTHD > 25 ? 7 : 0;
+            const reactorPower = adjustedCapacitivePower * (reactorPercentage / 100);
+
+            // Kondansatör tipi
+            const capacitorType = avgTHD > 40 ? 'Anti-Harmonik Ağır Tip (14% Reaktör)' :
+                                avgTHD > 25 ? 'Anti-Harmonik (7% Reaktör)' :
+                                avgTHD > 15 ? 'Harmonik Önleyici (Filtreli)' : 'Standart';
+
+            // Maliyet ve tasarruf hesaplamaları
+            const estimatedCost = calculateEstimatedCost(adjustedCapacitivePower, reactorRequired, reactorPercentage);
+            const energySavings = calculateEnergySavings(totalActivePower, currentPF, targetPF);
+            const paybackPeriod = calculatePaybackPeriod(estimatedCost, energySavings);
+
+            displayPowerBasedResults({
+                systemVoltage,
+                systemFrequency,
+                totalActivePower,
+                currentPF,
+                targetPF,
+                currentReactivePower,
+                targetReactivePower,
+                requiredCapacitivePower,
+                adjustedCapacitivePower,
+                avgTHD,
+                reactorRequired,
+                reactorPower,
+                reactorPercentage,
+                capacitorType,
+                cosPhiMode: cosPhiMode,
+                usedReactivePowerDirect: currentReactivePowerDirect !== null && currentReactivePowerDirect > 0,
+                estimatedCost,
+                energySavings,
+                paybackPeriod
+            });
+        }
+
+        // Tahmini maliyet hesaplama
+        function calculateEstimatedCost(capacitivePower, reactorRequired, reactorPercentage) {
+            // Kondansatör maliyeti (kVAr başına ortalama fiyat - TL)
+            const capacitorUnitCost = reactorRequired ?
+                (reactorPercentage > 10 ? 350 : 280) : // Anti-harmonik
+                220; // Standart
+
+            const capacitorCost = capacitivePower * capacitorUnitCost;
+
+            // Panel, kontrol ve montaj maliyeti (%40-50 ek)
+            const panelAndInstallation = capacitorCost * 0.45;
+
+            // Reaktör maliyeti
+            const reactorCost = reactorRequired ? (capacitivePower * reactorPercentage / 100) * 400 : 0;
+
+            const totalCost = capacitorCost + panelAndInstallation + reactorCost;
+
+            return {
+                capacitorCost,
+                reactorCost,
+                panelAndInstallation,
+                totalCost
+            };
+        }
+
+        // Enerji tasarrufu hesaplama
+        function calculateEnergySavings(activePower, currentPF, targetPF) {
+            // Kullanıcı girişlerinden parametreleri al
+            const operatingHours = parseFloat(document.getElementById('operatingHours').value) || 6000;
+            const electricityPrice = parseFloat(document.getElementById('electricityPrice').value) || 3.5;
+
+            // 1) Aktif güç kaybı tasarrufu
+            // Transformatör ve hat kayıpları - Görünür güç ile orantılı
+            const currentApparentPower = activePower / currentPF;
+            const targetApparentPower = activePower / targetPF;
+
+            // Hat kaybı yaklaşık olarak görünür gücün %2-3'ü kadar (transformatör dahil)
+            const lossPercentage = 0.025; // %2.5
+            const currentTotalLosses = currentApparentPower * lossPercentage;
+            const targetTotalLosses = targetApparentPower * lossPercentage;
+            const lossReduction = currentTotalLosses - targetTotalLosses;
+
+            // Yıllık aktif kayıp tasarrufu
+            const activeLossSavings = lossReduction * operatingHours * electricityPrice;
+
+            // 2) Reaktif enerji ceza tasarrufu (TEDAŞ kurallarına göre)
+            // Mevcut durum
+            const currentReactivePower = activePower * Math.tan(Math.acos(currentPF));
+            const currentReactiveEnergy = currentReactivePower * operatingHours; // kVArh/yıl
+            const currentActiveEnergy = activePower * operatingHours; // kWh/yıl
+
+            // TEDAŞ: Reaktif/Aktif oranı > %20 ise ceza
+            const allowedReactiveRatio = 0.20; // %20
+            const allowedReactiveEnergy = currentActiveEnergy * allowedReactiveRatio;
+            const excessCurrentReactive = Math.max(0, currentReactiveEnergy - allowedReactiveEnergy);
+
+            // Hedef durum
+            const targetReactivePower = activePower * Math.tan(Math.acos(targetPF));
+            const targetReactiveEnergy = targetReactivePower * operatingHours;
+            const excessTargetReactive = Math.max(0, targetReactiveEnergy - allowedReactiveEnergy);
+
+            // Cezadan kaçınılan reaktif enerji
+            const penaltyAvoided = excessCurrentReactive - excessTargetReactive;
+
+            // Reaktif enerji ceza ücreti (Aktif enerjinin fiyatının yaklaşık %60'ı kadar)
+            const reactivePenaltyRate = electricityPrice * 0.60; // TL/kVArh
+            const reactivePenaltySavings = penaltyAvoided * reactivePenaltyRate;
+
+            // 3) Kapasite artışı (Transformatör ve kablo kapasitesi)
+            // Cos φ düzelince aynı transformatör ile daha fazla aktif güç taşınabilir
+            const capacityIncrease = activePower * ((1/currentPF) - (1/targetPF));
+
+            // 4) Güç çarpanı düzeltme (Elektrik faturasında indirim)
+            // Bazı santraller cos φ > 0.90 olduğunda indirim yapıyor
+            let powerFactorBonus = 0;
+            if (targetPF >= 0.95 && currentPF < 0.90) {
+                // Faturaya %2-5 indirim uygulanabilir
+                powerFactorBonus = currentActiveEnergy * electricityPrice * 0.03; // %3 kabul
+            }
+
+            // Toplam yıllık tasarruf
+            const annualSavings = activeLossSavings + reactivePenaltySavings + powerFactorBonus;
+            const monthlySavings = annualSavings / 12;
+
+            return {
+                lossReduction: lossReduction.toFixed(2),
+                activeLossSavings: activeLossSavings.toFixed(2),
+                currentReactivePower: currentReactivePower.toFixed(2),
+                targetReactivePower: targetReactivePower.toFixed(2),
+                reactiveReduction: (currentReactivePower - targetReactivePower).toFixed(2),
+                excessCurrentReactive: (excessCurrentReactive / 1000).toFixed(2), // MWh'e çevir
+                excessTargetReactive: (excessTargetReactive / 1000).toFixed(2),
+                penaltyAvoided: (penaltyAvoided / 1000).toFixed(2), // MWh
+                reactivePenaltySavings: reactivePenaltySavings.toFixed(2),
+                capacityIncrease: capacityIncrease.toFixed(2),
+                powerFactorBonus: powerFactorBonus.toFixed(2),
+                annualSavings: annualSavings.toFixed(2),
+                monthlySavings: monthlySavings.toFixed(2),
+                allowedReactiveRatio: (allowedReactiveRatio * 100).toFixed(0)
+            };
+        }
+
+        // Geri ödeme süresi hesaplama
+        function calculatePaybackPeriod(cost, savings) {
+            const paybackMonths = (cost.totalCost / parseFloat(savings.monthlySavings)).toFixed(1);
+            const paybackYears = (paybackMonths / 12).toFixed(1);
+
+            return {
+                months: paybackMonths,
+                years: paybackYears
+            };
+        }
+
+        function determineStageCount(totalPower, motors, devices) {
+            // Motor çalışma rejimlerine göre kademe sayısı belirleme
+            const hasIntermittent = motors.some(m => m.regime === 'intermittent');
+            const hasHeavyLoad = motors.some(m => m.regime === 'heavy');
+            const hasInverters = devices.some(d => d.deviceType === 'inverter');
+
+            if (totalPower < 50) return 4;
+            if (totalPower < 150) return hasIntermittent || hasInverters ? 6 : 5;
+            if (totalPower < 300) return hasIntermittent || hasInverters ? 8 : 6;
+            if (totalPower < 500) return hasHeavyLoad || hasInverters ? 10 : 8;
+            return hasHeavyLoad || hasInverters ? 12 : 10;
+        }
+
+        function calculateStages(totalCapacitivePower, stageCount, motors, devices, avgTHD, systemVoltage) {
+            const stages = [];
+            const hasVariableLoad = motors.some(m => m.regime !== 'continuous') ||
+                                   devices.some(d => d.deviceType === 'inverter');
+
+            // Reaktör gereksinimi
+            const reactorPercentage = avgTHD > 40 ? 14 : avgTHD > 25 ? 7 : 0;
+            const needsReactor = reactorPercentage > 0;
+
+            if (hasVariableLoad) {
+                // Değişken yük için üstel kademe dizilimi (1:1:2:2:4 mantığı)
+                const baseStage = totalCapacitivePower / (Math.pow(2, Math.ceil(stageCount / 2)));
+                let currentMultiplier = 1;
+                let totalAssigned = 0;
+
+                for (let i = 0; i < stageCount; i++) {
+                    const stagePower = baseStage * currentMultiplier;
+                    const stageType = i < 2 ? 'Küçük Yük Düzenleme' : i < 4 ? 'Orta Yük' : 'Ağır Yük';
+                    const switchType = i < 3 ? 'Statik (Tristör/Thyristor)' : 'Kontaktör (AC3)';
+
+                    // Kondansatör tipi belirleme
+                    let capacitorSpec = '';
+                    if (needsReactor) {
+                        capacitorSpec = avgTHD > 40 ?
+                            `Anti-Harmonik Kondansatör + %${reactorPercentage} Seri Reaktör` :
+                            `Anti-Harmonik Kondansatör + %${reactorPercentage} Seri Reaktör`;
+                    } else {
+                        capacitorSpec = avgTHD > 15 ?
+                            'Harmonik Filtreli Kondansatör (HD Type)' :
+                            'Standart Güç Kondansatörü';
+                    }
+
+                    const current = (stagePower * 1000) / (Math.sqrt(3) * systemVoltage);
+                    const cableCrossSection = calculateCableCrossSection(current);
+                    const mcbRating = calculateMCBRating(current);
+
+                    stages.push({
+                        stage: i + 1,
+                        power: stagePower,
+                        type: stageType,
+                        switchType: switchType,
+                        capacitorSpec: capacitorSpec,
+                        reactorRequired: needsReactor,
+                        reactorPercentage: needsReactor ? reactorPercentage : 0,
+                        reactorPower: needsReactor ? (stagePower * reactorPercentage / 100) : 0,
+                        voltage: systemVoltage,
+                        current: current,
+                        cableCrossSection: cableCrossSection,
+                        mcbRating: mcbRating,
+                        contactorRating: Math.ceil(current * 1.5 / 5) * 5, // 1.5x akım, 5'in katları
+                        standard: 'IEC 60831-1/2, EN 60439-1'
+                    });
+                    totalAssigned += stagePower;
+
+                    if ((i + 1) % 2 === 0) currentMultiplier *= 2;
+                }
+
+                // Kalan gücü son kademeye ekle
+                if (totalAssigned < totalCapacitivePower) {
+                    const lastStage = stages[stages.length - 1];
+                    lastStage.power += (totalCapacitivePower - totalAssigned);
+                    lastStage.reactorPower = needsReactor ? (lastStage.power * reactorPercentage / 100) : 0;
+                    lastStage.current = (lastStage.power * 1000) / (Math.sqrt(3) * systemVoltage);
+                    lastStage.cableCrossSection = calculateCableCrossSection(lastStage.current);
+                    lastStage.mcbRating = calculateMCBRating(lastStage.current);
+                    lastStage.contactorRating = Math.ceil(lastStage.current * 1.5 / 5) * 5;
+                }
+            } else {
+                // Sabit yük için eşit kademe dizilimi
+                const stagePower = totalCapacitivePower / stageCount;
+                for (let i = 0; i < stageCount; i++) {
+                    let capacitorSpec = '';
+                    if (needsReactor) {
+                        capacitorSpec = avgTHD > 40 ?
+                            `Anti-Harmonik Kondansatör + %${reactorPercentage} Seri Reaktör` :
+                            `Anti-Harmonik Kondansatör + %${reactorPercentage} Seri Reaktör`;
+                    } else {
+                        capacitorSpec = avgTHD > 15 ?
+                            'Harmonik Filtreli Kondansatör (HD Type)' :
+                            'Standart Güç Kondansatörü';
+                    }
+
+                    const current = (stagePower * 1000) / (Math.sqrt(3) * systemVoltage);
+                    const cableCrossSection = calculateCableCrossSection(current);
+                    const mcbRating = calculateMCBRating(current);
+
+                    stages.push({
+                        stage: i + 1,
+                        power: stagePower,
+                        type: 'Standart',
+                        switchType: 'Kontaktör (AC3)',
+                        capacitorSpec: capacitorSpec,
+                        reactorRequired: needsReactor,
+                        reactorPercentage: needsReactor ? reactorPercentage : 0,
+                        reactorPower: needsReactor ? (stagePower * reactorPercentage / 100) : 0,
+                        voltage: systemVoltage,
+                        current: current,
+                        cableCrossSection: cableCrossSection,
+                        mcbRating: mcbRating,
+                        contactorRating: Math.ceil(current * 1.5 / 5) * 5,
+                        standard: 'IEC 60831-1/2, EN 60439-1'
+                    });
+                }
+            }
+
+            return stages;
+        }
+
+        // Kablo kesiti hesaplama (Bakır kablo için)
+        function calculateCableCrossSection(current) {
+            const safetyFactor = 1.3; // Kondansatörler için güvenlik faktörü
+            const adjustedCurrent = current * safetyFactor;
+
+            if (adjustedCurrent <= 16) return 2.5;
+            if (adjustedCurrent <= 21) return 4;
+            if (adjustedCurrent <= 28) return 6;
+            if (adjustedCurrent <= 36) return 10;
+            if (adjustedCurrent <= 49) return 16;
+            if (adjustedCurrent <= 63) return 25;
+            if (adjustedCurrent <= 81) return 35;
+            if (adjustedCurrent <= 104) return 50;
+            if (adjustedCurrent <= 125) return 70;
+            if (adjustedCurrent <= 151) return 95;
+            if (adjustedCurrent <= 175) return 120;
+            if (adjustedCurrent <= 207) return 150;
+            if (adjustedCurrent <= 239) return 185;
+            if (adjustedCurrent <= 273) return 240;
+            return 300;
+        }
+
+        // MCB/Sigorta değeri hesaplama
+        function calculateMCBRating(current) {
+            const mcbFactor = 1.5; // Kondansatörler için 1.5x akım
+            const requiredRating = current * mcbFactor;
+
+            const standardRatings = [6, 10, 13, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250];
+            for (let rating of standardRatings) {
+                if (rating >= requiredRating) return rating;
+            }
+            return 250;
+        }
+
+        // Aktif güç bazlı özel sonuç ekranı
+        function displayPowerBasedResults(results) {
+            const resultsDiv = document.getElementById('results');
+
+            let cosPhiInfoText = '';
+            if (results.cosPhiMode === 'known') {
+                cosPhiInfoText = `<strong>${results.currentPF.toFixed(3)}</strong> (Sahadan ölçülen değer) ✅`;
+            } else if (results.usedReactivePowerDirect) {
+                cosPhiInfoText = `<strong>${results.currentPF.toFixed(3)}</strong> (Reaktif güç: ${results.currentReactivePower.toFixed(2)} kVAr'dan hesaplanan) ✅`;
+            } else {
+                cosPhiInfoText = `<strong>${results.currentPF.toFixed(3)}</strong> (Tahmini değer) ⚠️`;
+            }
+
+            resultsDiv.innerHTML = `
+                <div class="results fade-in">
+                    <h2>⚡ Hızlı Kompanzasyon Hesaplama Sonuçları</h2>
+
+                    <div class="action-buttons" style="margin-bottom: 20px;">
+                        <button class="print-button" onclick="window.print()">🖨️ Yazdır / PDF</button>
+                        <button onclick="saveToLocalStorage()">💾 Kaydet</button>
+                    </div>
+
+                    <div class="info" style="background: #e3f2fd; border-color: #2196f3;">
+                        <strong>📊 GİRİLEN BİLGİLER</strong><br>
+                        • Toplam Aktif Güç: <strong>${results.totalActivePower.toFixed(2)} kW</strong><br>
+                        • Mevcut Cos φ: ${cosPhiInfoText}<br>
+                        • Hedef Cos φ: <strong>${results.targetPF}</strong><br>
+                        • Harmonik Seviyesi: <strong>THD ~${results.avgTHD}%</strong><br>
+                        • Elektrik Fiyatı: <strong>${parseFloat(document.getElementById('electricityPrice').value).toFixed(2)} TL/kWh</strong><br>
+                        • Yıllık Çalışma: <strong>${parseFloat(document.getElementById('operatingHours').value).toFixed(0)} saat</strong>
+                    </div>
+
+                    <!-- Gerekli Kondansatör Gücü -->
+                    <div class="result-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <h3 style="color: white; border-color: white;">🎯 GEREKLİ KONDANSATÖR GÜCÜ</h3>
+                        <div style="background: white; padding: clamp(1rem, 3vw, 1.5rem); border-radius: 8px; color: #333; margin-top: 15px;">
+                            <div style="text-align: center; margin-bottom: clamp(1rem, 3vw, 1.5rem);">
+                                <div style="font-size: clamp(2rem, 6vw, 3rem); font-weight: bold; color: #667eea; word-wrap: break-word;">
+                                    ${results.adjustedCapacitivePower.toFixed(2)} kVAr
+                                </div>
+                                <div style="font-size: clamp(1rem, 2.5vw, 1.2rem); color: #666; margin-top: 10px; word-wrap: break-word;">
+                                    ${results.capacitorType}
+                                </div>
+                            </div>
+
+                            ${results.reactorRequired ? `
+                            <div style="background: #fff3cd; padding: clamp(0.875rem, 2.5vw, 1.25rem); border-radius: 8px; border: 2px solid #ffc107; margin-top: 15px; word-wrap: break-word;">
+                                <strong style="color: #856404; font-size: clamp(0.95rem, 2vw, 1.05rem);">⚠️ DİKKAT: Reaktör Gerekli!</strong><br>
+                                <div style="margin-top: 10px; font-size: clamp(0.9rem, 2vw, 1.1rem);">
+                                    • Reaktör Tipi: <strong>%${results.reactorPercentage} Seri Reaktör</strong><br>
+                                    • Reaktör Gücü: <strong>${results.reactorPower.toFixed(2)} kVAr</strong><br>
+                                    • Sebep: Yüksek harmonik yükü (THD: ${results.avgTHD}%)
+                                </div>
+                            </div>
+                            ` : `
+                            <div style="background: #e8f5e9; padding: clamp(0.875rem, 2.5vw, 1.25rem); border-radius: 8px; border: 2px solid #4caf50; margin-top: 15px; word-wrap: break-word; font-size: clamp(0.9rem, 1.8vw, 0.95rem);">
+                                <strong style="color: #2e7d32;">✓ Standart Kondansatör Yeterlidir</strong><br>
+                                Harmonik seviyesi düşük olduğu için reaktöre gerek yoktur.
+                            </div>
+                            `}
+                        </div>
+                    </div>
+
+                    <!-- Maliyet Analizi -->
+                    <div class="result-card">
+                        <h3>💰 TAHMİNİ YATIRIM MALİYETİ</h3>
+                        <div class="result-item">
+                            <span class="result-label">Kondansatör Maliyeti:</span>
+                            <span class="result-value">${results.estimatedCost.capacitorCost.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")} ₺</span>
+                        </div>
+                        ${results.reactorRequired ? `
+                        <div class="result-item">
+                            <span class="result-label">Reaktör Maliyeti:</span>
+                            <span class="result-value">${results.estimatedCost.reactorCost.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")} ₺</span>
+                        </div>
+                        ` : ''}
+                        <div class="result-item">
+                            <span class="result-label">Panel, Kontrol ve Montaj:</span>
+                            <span class="result-value">${results.estimatedCost.panelAndInstallation.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")} ₺</span>
+                        </div>
+                        <div class="result-item" style="background: #f0f0f0; padding: clamp(0.875rem, 2.5vw, 1.25rem); border-radius: 8px; margin-top: 10px;">
+                            <span class="result-label" style="font-size: clamp(1rem, 2.5vw, 1.2rem);"><strong>TOPLAM MALİYET:</strong></span>
+                            <span class="result-value" style="font-size: clamp(1.2rem, 3vw, 1.5rem); color: #667eea;"><strong>${results.estimatedCost.totalCost.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")} ₺</strong></span>
+                        </div>
+                        <div style="margin-top: 15px; padding: clamp(0.75rem, 2vw, 1rem); background: #fff9e6; border-radius: 5px; font-size: clamp(0.85rem, 1.8vw, 0.9rem); color: #856404; word-wrap: break-word;">
+                            <strong>📝 Not:</strong> Maliyet tahmini ortalama piyasa fiyatlarına göre yapılmıştır.
+                            Gerçek maliyet tedarikçiye, markaya ve proje özelliklerine göre değişebilir.
+                        </div>
+                    </div>
+
+                    <!-- Enerji Tasarrufu -->
+                    <div class="result-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
+                        <h3 style="color: white; border-color: white;">💡 ENERJİ TASARRUFU ve GERİ ÖDEME</h3>
+                        <div style="background: white; padding: clamp(1rem, 3vw, 1.5rem); border-radius: 8px; color: #333; margin-top: 15px;">
+                            <div style="text-align: center; margin-bottom: clamp(1rem, 3vw, 1.5rem);">
+                                <div style="font-size: clamp(1.75rem, 5vw, 2.5rem); font-weight: bold; color: #11998e; word-wrap: break-word;">
+                                    ${results.energySavings.annualSavings.replace(/\B(?=(\d{3})+(?!\d))/g, ".")} ₺/Yıl
+                                </div>
+                                <div style="font-size: clamp(0.95rem, 2.2vw, 1.1rem); color: #666; margin-top: 5px; word-wrap: break-word;">
+                                    (Aylık: ${results.energySavings.monthlySavings.replace(/\B(?=(\d{3})+(?!\d))/g, ".")} ₺)
+                                </div>
+                            </div>
+
+                            <div style="background: #e3f2fd; padding: clamp(0.75rem, 2vw, 1rem); border-radius: 8px; margin-bottom: clamp(0.875rem, 2.5vw, 1.25rem); border-left: 4px solid #2196f3;">
+                                <strong style="color: #1976d2; font-size: clamp(0.9rem, 1.8vw, 0.95rem);">📋 Hesaplama Parametreleri:</strong>
+                                <div style="margin-top: 8px; font-size: clamp(0.85rem, 1.8vw, 0.9rem); color: #666;">
+                                    • Elektrik Birim Fiyatı: <strong>${parseFloat(document.getElementById('electricityPrice').value).toFixed(2)} TL/kWh</strong><br>
+                                    • Yıllık Çalışma Saati: <strong>${parseFloat(document.getElementById('operatingHours').value).toFixed(0)} saat</strong><br>
+                                    • Yıllık Aktif Enerji: <strong>${(results.totalActivePower * parseFloat(document.getElementById('operatingHours').value) / 1000).toFixed(0)} MWh</strong>
+                                </div>
+                            </div>
+
+                            <h4 style="color: #667eea; margin: clamp(0.875rem, 2.5vw, 1.25rem) 0; font-size: clamp(1rem, 2.2vw, 1.1rem);">📊 Tasarruf Detayları:</h4>
+
+                            <div style="background: #f8f9fa; padding: clamp(0.875rem, 2.5vw, 1.25rem); border-radius: 8px; margin: clamp(0.625rem, 2vw, 0.875rem) 0; word-wrap: break-word;">
+                                <strong style="color: #667eea; font-size: clamp(0.9rem, 1.8vw, 0.95rem);">1️⃣ Hat ve Transformatör Kayıp Tasarrufu:</strong>
+                                <div class="result-item" style="margin-top: 10px;">
+                                    <span class="result-label">Güç Kaybı Azalması:</span>
+                                    <span class="result-value">${results.energySavings.lossReduction} kW</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Yıllık Tasarruf:</span>
+                                    <span class="result-value">${results.energySavings.activeLossSavings.replace(/\B(?=(\d{3})+(?!\d))/g, ".")} ₺</span>
+                                </div>
+                            </div>
+
+                            <div style="background: #fff3e0; padding: clamp(0.875rem, 2.5vw, 1.25rem); border-radius: 8px; margin: clamp(0.625rem, 2vw, 0.875rem) 0; word-wrap: break-word;">
+                                <strong style="color: #f57c00; font-size: clamp(0.9rem, 1.8vw, 0.95rem);">2️⃣ Reaktif Enerji Ceza Tasarrufu (TEDAŞ):</strong>
+                                <div style="margin-top: 10px; font-size: clamp(0.85rem, 1.8vw, 0.95rem); color: #666;">
+                                    ℹ️ TEDAŞ Kuralı: Reaktif tüketim, aktif tüketimin <strong>%${results.energySavings.allowedReactiveRatio}'sine</strong> kadar ücretsiz
+                                </div>
+                                <div class="result-item" style="margin-top: 10px;">
+                                    <span class="result-label">Mevcut Fazla Reaktif:</span>
+                                    <span class="result-value" style="color: #f44336;">${results.energySavings.excessCurrentReactive} MWh/Yıl (Cezalı)</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Hedef Fazla Reaktif:</span>
+                                    <span class="result-value" style="color: #4caf50;">${results.energySavings.excessTargetReactive} MWh/Yıl</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Cezadan Kaçınılan:</span>
+                                    <span class="result-value" style="color: #667eea;">${results.energySavings.penaltyAvoided} MWh/Yıl</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Yıllık Tasarruf:</span>
+                                    <span class="result-value">${results.energySavings.reactivePenaltySavings.replace(/\B(?=(\d{3})+(?!\d))/g, ".")} ₺</span>
+                                </div>
+                            </div>
+
+                            ${parseFloat(results.energySavings.powerFactorBonus) > 0 ? `
+                            <div style="background: #e8f5e9; padding: clamp(0.875rem, 2.5vw, 1.25rem); border-radius: 8px; margin: clamp(0.625rem, 2vw, 0.875rem) 0; word-wrap: break-word;">
+                                <strong style="color: #2e7d32; font-size: clamp(0.9rem, 1.8vw, 0.95rem);">3️⃣ Güç Çarpanı Primi (Bonus):</strong>
+                                <div style="margin-top: 10px; font-size: clamp(0.85rem, 1.8vw, 0.95rem); color: #666;">
+                                    ✅ Cos φ > 0.95 olduğunda bazı dağıtım şirketleri fatura indirimi yapıyor
+                                </div>
+                                <div class="result-item" style="margin-top: 10px;">
+                                    <span class="result-label">Tahmini İndirim:</span>
+                                    <span class="result-value">${results.energySavings.powerFactorBonus.replace(/\B(?=(\d{3})+(?!\d))/g, ".")} ₺/Yıl</span>
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            <div style="background: #e3f2fd; padding: clamp(0.875rem, 2.5vw, 1.25rem); border-radius: 8px; margin: clamp(0.625rem, 2vw, 0.875rem) 0; word-wrap: break-word;">
+                                <strong style="color: #1976d2; font-size: clamp(0.9rem, 1.8vw, 0.95rem);">💼 Ek Fayda - Kapasite Artışı:</strong>
+                                <div style="margin-top: 10px; font-size: clamp(0.85rem, 1.8vw, 0.95rem);">
+                                    Aynı transformatör ve kablolarla <strong>${results.energySavings.capacityIncrease} kW</strong> daha fazla yük taşınabilir!
+                                </div>
+                            </div>
+
+                            <div style="background: #e8f5e9; padding: clamp(1rem, 3vw, 1.5rem); border-radius: 8px; margin-top: clamp(1rem, 3vw, 1.5rem); border: 3px solid #4caf50;">
+                                <h4 style="color: #2e7d32; margin-bottom: 10px; text-align: center; font-size: clamp(1rem, 2.5vw, 1.15rem);">🎯 GERİ ÖDEME SÜRESİ (ROI)</h4>
+                                <div style="text-align: center; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: bold; color: #2e7d32;">
+                                    ${results.paybackPeriod.years} Yıl
+                                </div>
+                                <div style="text-align: center; font-size: clamp(1rem, 2.5vw, 1.2rem); color: #666; margin-top: 5px;">
+                                    (${results.paybackPeriod.months} Ay)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reaktif Güç Analizi -->
+                    <div class="result-card">
+                        <h3>⚡ Reaktif Güç Analizi</h3>
+                        <div class="result-item">
+                            <span class="result-label">Mevcut Reaktif Güç:</span>
+                            <span class="result-value">${results.currentReactivePower.toFixed(2)} kVAr</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Hedef Reaktif Güç:</span>
+                            <span class="result-value">${results.targetReactivePower.toFixed(2)} kVAr</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Kompanse Edilecek:</span>
+                            <span class="result-value" style="color: #f5576c;">${results.requiredCapacitivePower.toFixed(2)} kVAr</span>
+                        </div>
+                        ${results.adjustedCapacitivePower > results.requiredCapacitivePower ? `
+                        <div class="result-item">
+                            <span class="result-label">Harmonik Düzeltmeli:</span>
+                            <span class="result-value" style="color: #667eea;">${results.adjustedCapacitivePower.toFixed(2)} kVAr</span>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Sistem Voltajı -->
+                    <div class="result-card">
+                        <h3>🔌 Sistem Bilgisi</h3>
+                        <div class="result-item">
+                            <span class="result-label">Sistem Voltajı:</span>
+                            <span class="result-value">${results.systemVoltage} V, 3 Faz</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Sistem Frekansı:</span>
+                            <span class="result-value">${results.systemFrequency} Hz</span>
+                        </div>
+                    </div>
+
+                    <!-- Tasarruf Hesaplama Metodolojisi -->
+                    <div class="info" style="background: #f3e5f5; border-color: #9c27b0;">
+                        <strong>📐 TASARRUF HESAPLAMA METODOLOJİSİ</strong>
+                        <ul style="margin-top: 10px; margin-left: 20px; font-size: 0.95em;">
+                            <li><strong>Hat Kayıpları:</strong> Görünür gücün %2.5'i (transformatör + kablo kayıpları)</li>
+                            <li><strong>TEDAŞ Reaktif Ceza:</strong> Aktif enerjinin %20'sini aşan reaktif tüketim cezalandırılır</li>
+                            <li><strong>Ceza Oranı:</strong> Aktif enerji fiyatının ~%60'ı (2.10 ₺/kVArh)</li>
+                            <li><strong>Elektrik Fiyatı:</strong> 3.50 ₺/kWh (Sanayi tarifesi ortalaması)</li>
+                            <li><strong>Çalışma Saati:</strong> 6000 saat/yıl (250 gün x 24 saat)</li>
+                            <li><strong>Güç Faktörü Primi:</strong> Cos φ > 0.95 ise bazı bölgelerde %2-5 indirim</li>
+                        </ul>
+                    </div>
+
+                    <!-- Öneriler -->
+                    <div class="info">
+                        <strong>💡 ÖNERİLER ve SONRAKI ADIMLAR</strong>
+                        <ul style="margin-top: 10px; margin-left: 20px;">
+                            <li>Bu hesaplama <strong>hızlı ön değerlendirme</strong> içindir</li>
+                            <li>Kesin tasarım için detaylı elektrik projesi hazırlanmalıdır</li>
+                            <li>Kompanzasyon panosu seçiminde ${results.adjustedCapacitivePower.toFixed(0)} kVAr civarı aranmalıdır</li>
+                            ${results.reactorRequired ? '<li><strong>Mutlaka reaktörlü tip</strong> seçilmelidir (Harmonik koruma)</li>' : ''}
+                            <li>Enerji analizörü ile 1 haftalık ölçüm yapılması önerilir</li>
+                            <li>Tedarikçilerden <strong>3 farklı teklif</strong> alınmalıdır</li>
+                            <li>Geri ödeme süresi <strong>${results.paybackPeriod.years} yıl</strong> - Yatırım ekonomiktir!</li>
+                            <li><strong>TEDAŞ reaktif ceza detayları:</strong> Faturanızdan kontrol edebilirsiniz</li>
+                        </ul>
+                    </div>
+
+                    ${!results.cosPhiMode || results.cosPhiMode === 'unknown' ? `
+                    <div class="warning">
+                        <strong>⚠️ UYARI:</strong> Bu hesaplama tahmini değer kullanılarak yapılmıştır.
+                        Daha doğru sonuç için:
+                        <ul style="margin-top: 10px; margin-left: 20px;">
+                            <li>Enerji analizörü ile gerçek Cos φ ölçümü yapın</li>
+                            <li>Veya sayaçtan reaktif güç değerini okuyun</li>
+                            <li>7 gün sürekli ölçüm yapılması idealdir</li>
+                        </ul>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            showNotification('Hesaplama tamamlandı!', 'success');
+        }
+
+        function displayResults(results) {
+            setTimeout(() => {
+                hideLoading();
+                showNotification('Hesaplama başarıyla tamamlandı!', 'success');
+            }, 200);
+
+            const resultsDiv = document.getElementById('results');
+
+            let harmonicWarning = '';
+            if (results.avgTHD > 40) {
+                harmonicWarning = `
+                    <div class="warning">
+                        <strong>⚠️ KRİTİK:</strong> Çok yüksek harmonik seviyesi tespit edildi (THD: ${results.avgTHD.toFixed(1)}%).
+                        14% Reaktörlü anti-harmonik kondansatör ve harmonik filtre kullanımı zorunludur!
+                    </div>
+                `;
+            } else if (results.avgTHD > 25) {
+                harmonicWarning = `
+                    <div class="warning">
+                        <strong>⚠️ UYARI:</strong> Yüksek harmonik seviyesi tespit edildi (THD: ${results.avgTHD.toFixed(1)}%).
+                        7% Reaktörlü anti-harmonik kondansatör kullanımı zorunludur!
+                    </div>
+                `;
+            } else if (results.avgTHD > 15) {
+                harmonicWarning = `
+                    <div class="info">
+                        <strong>ℹ️ BİLGİ:</strong> Orta seviye harmonik tespit edildi (THD: ${results.avgTHD.toFixed(1)}%).
+                        Harmonik önleyici kondansatör önerilir.
+                    </div>
+                `;
+            }
+
+            // Motor-Cihaz bağlantı bilgisi
+            let connectionInfo = '';
+            if (results.connectedMotors > 0) {
+                connectionInfo = `
+                    <div class="info">
+                        <strong>🔗 BAĞLANTI BİLGİSİ:</strong> ${results.connectedMotors} motor cihaz ile bağlantılı.
+                        <ul style="margin-top: 10px; margin-left: 20px;">
+                            ${results.motorConnections.map(conn =>
+                                `<li><strong>${conn.motor.name}</strong> → ${conn.device.name}
+                                (${conn.device.deviceType === 'inverter' ?
+                                    `Frekans: ${conn.device.frequency}%, Güç Azaltma: ${(conn.powerReduction * 100).toFixed(0)}%` :
+                                    'Yumuşak Kalkış'})</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            const stagesHTML = results.stages.map(stage => `
+                <div class="stage-card">
+                    <h4>🔷 Kademe ${stage.stage} - Sipariş Detayı</h4>
+                    <div class="result-item">
+                        <span class="result-label">Kondansatör Gücü:</span>
+                        <span class="result-value">${stage.power.toFixed(2)} kVAr</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Kondansatör Tipi:</span>
+                        <span class="result-value">${stage.capacitorSpec}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Gerilim Seviyesi:</span>
+                        <span class="result-value">${stage.voltage} V (3 Faz)</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Kademe Akımı:</span>
+                        <span class="result-value">${stage.current.toFixed(2)} A</span>
+                    </div>
+                    ${stage.reactorRequired ? `
+                    <div class="result-item" style="background: #fff3cd; padding: 8px; border-radius: 5px; margin: 5px 0;">
+                        <span class="result-label">⚠️ Reaktör Zorunlu:</span>
+                        <span class="result-value">%${stage.reactorPercentage} Seri Reaktör (${stage.reactorPower.toFixed(2)} kVAr)</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Reaktör Bağlantı:</span>
+                        <span class="result-value">Kondansatör ile Seri Bağlantı</span>
+                    </div>
+                    ` : ''}
+                    <div class="result-item">
+                        <span class="result-label">Kademe Tipi:</span>
+                        <span class="result-value">${stage.type}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Anahtarlama Cihazı:</span>
+                        <span class="result-value">${stage.switchType}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Kontaktör Değeri:</span>
+                        <span class="result-value">${stage.contactorRating}A (AC3 tipi, yardımcı kontaklı)</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Sigorta/MCB Değeri:</span>
+                        <span class="result-value">${stage.mcbRating}A (C Tipi veya gG Tipi)</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Kablo Kesiti (Bakır):</span>
+                        <span class="result-value">${stage.cableCrossSection} mm² (NYY veya NYM)</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Uygun Standart:</span>
+                        <span class="result-value" style="font-size: 0.85em;">${stage.standard}</span>
+                    </div>
+                    <div style="margin-top: 10px; padding: 8px; background: #e8f5e9; border-radius: 5px; font-size: 0.9em;">
+                        <strong>📋 Kademe ${stage.stage} Sipariş Detayı:</strong><br>
+                        • Kondansatör: ${stage.power.toFixed(2)} kVAr, ${stage.voltage}V, 3F, ${stage.capacitorSpec}<br>
+                        ${stage.reactorRequired ? `• Seri Reaktör: ${stage.reactorPercentage}% (${stage.reactorPower.toFixed(2)} kVAr), Demir Çekirdekli<br>` : ''}
+                        • Kontaktör: ${stage.contactorRating}A, AC3, ${stage.voltage}V Bobin, NO+NC Yardımcı Kontak<br>
+                        • Koruma: MCB/Sigorta ${stage.mcbRating}A, Şalter ${stage.mcbRating}A<br>
+                        • Kablo: ${stage.cableCrossSection}mm² x 4 (3F+N veya 3F+PE), NYY/NYM<br>
+                        • Deşarj Direnci: Dahili veya Harici (Kondansatör ile uyumlu)<br>
+                        • Gösterge: Kontaktör çalışma durumu için LED/Lamba
+                    </div>
+                </div>
+            `).join('');
+
+            // Sonuçları sakla
+            lastResults = results;
+
+            // Tasarım modu bilgisi
+            let designModeInfo = '';
+            if (results.designMode === 'new') {
+                designModeInfo = `
+                    <div class="info" style="background: #e3f2fd; border-color: #2196f3;">
+                        <strong>🆕 TASARIM MODU: Sıfırdan Yeni Sistem</strong><br>
+                        Bu hesaplama, motorlar ve cihazların kendi cos φ değerlerinden yola çıkarak yapılmıştır.
+                        Mevcut sistem cos φ değeri dikkate alınmamıştır. Tamamı yeni kurulum için geçerlidir.
+                    </div>
+                `;
+            } else if (results.designMode === 'upgrade') {
+                designModeInfo = `
+                    <div class="info" style="background: #fff3e0; border-color: #ff9800;">
+                        <strong>🔄 TASARIM MODU: Mevcut Sistemi Geliştirme</strong><br>
+                        Bu hesaplama, mevcut sistemin cos φ değerinden (${results.currentPF}) hedefe (${results.targetPF}) ulaşmak için
+                        <strong>sadece ilave edilmesi gereken kondansatör gücünü</strong> göstermektedir.
+                    </div>
+                `;
+            } else if (results.designMode === 'powerBased') {
+                let cosPhiInfoText = '';
+                if (results.cosPhiMode === 'known') {
+                    cosPhiInfoText = `Mevcut Cos φ: <strong>${results.currentPF.toFixed(3)}</strong> (Sahadan ölçülen değer)`;
+                } else if (results.usedReactivePowerDirect) {
+                    cosPhiInfoText = `Mevcut Cos φ: <strong>${results.currentPF.toFixed(3)}</strong> (Reaktif güç: ${results.currentReactivePower.toFixed(2)} kVAr'dan hesaplanan)`;
+                } else {
+                    cosPhiInfoText = `Mevcut Cos φ: <strong>${results.currentPF.toFixed(3)}</strong> (Tahmini değer)`;
+                }
+
+                designModeInfo = `
+                    <div class="info" style="background: #f3e5f5; border-color: #9c27b0;">
+                        <strong>⚡ TASARIM MODU: Aktif Güç Bazlı Hızlı Hesaplama (Saha Modu)</strong><br>
+                        📊 Toplam Aktif Güç: <strong>${results.totalActivePower.toFixed(2)} kW</strong><br>
+                        📈 ${cosPhiInfoText}<br>
+                        🎯 Hedef Cos φ: <strong>${results.targetPF}</strong><br>
+                        ${results.cosPhiMode === 'unknown' ? '<span style="color: #ff6f00;">⚠️ Not: Tahmini değer kullanıldı. Daha doğru hesaplama için mevcut Cos φ veya reaktif güç ölçümü önerilir.</span>' : '<span style="color: #4caf50;">✓ Ölçülen değer kullanıldı - Doğru hesaplama</span>'}
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML = `
+                <div class="results fade-in">
+                    <h2>📈 Kompanzasyon Hesaplama Sonuçları</h2>
+
+                    <div class="action-buttons" style="margin-bottom: 20px;">
+                        <button class="print-button" onclick="generatePDF()">🖨️ PDF Rapor / Yazdır</button>
+                        <button onclick="saveToLocalStorage()">💾 Sonuçları Kaydet</button>
+                    </div>
+
+                    ${designModeInfo}
+                    ${harmonicWarning}
+                    ${connectionInfo}
+
+                    <!-- Grafikler -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0;">
+                        <div class="chart-container">
+                            <canvas id="powerChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="harmonicChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>🔌 Sistem Özeti</h3>
+                        <div class="result-item">
+                            <span class="result-label">Toplam Aktif Güç:</span>
+                            <span class="result-value">${results.totalActivePower.toFixed(2)} kW</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Motor Sayısı:</span>
+                            <span class="result-value">${results.motorCount} adet</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">İnvertör/Soft Starter:</span>
+                            <span class="result-value">${results.deviceCount} adet</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Bağlantılı Motor-Cihaz:</span>
+                            <span class="result-value">${results.connectedMotors} bağlantı</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Harmonik Üreten Güç:</span>
+                            <span class="result-value">${results.totalHarmonicPower.toFixed(2)} kW</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Sistem Voltajı:</span>
+                            <span class="result-value">${results.systemVoltage} V</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>⚡ Reaktif Güç Analizi</h3>
+                        ${results.currentPF !== null ? `
+                        <div class="result-item">
+                            <span class="result-label">Mevcut Cos φ:</span>
+                            <span class="result-value">${results.currentPF}</span>
+                        </div>
+                        ` : ''}
+                        <div class="result-item">
+                            <span class="result-label">Hedef Cos φ:</span>
+                            <span class="result-value">${results.targetPF}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Mevcut Reaktif Güç:</span>
+                            <span class="result-value">${results.currentReactivePower.toFixed(2)} kVAr</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Hedef Reaktif Güç:</span>
+                            <span class="result-value">${results.targetReactivePower.toFixed(2)} kVAr</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Gerekli Kapasitif Güç:</span>
+                            <span class="result-value">${results.requiredCapacitivePower.toFixed(2)} kVAr</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>🌊 Harmonik Analizi</h3>
+                        <div class="result-item">
+                            <span class="result-label">Ortalama THD:</span>
+                            <span class="result-value">${results.avgTHD.toFixed(2)}%</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Harmonik Düzeltme Faktörü:</span>
+                            <span class="result-value">×${(results.adjustedCapacitivePower / results.requiredCapacitivePower).toFixed(2)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Düzeltilmiş Kapasitif Güç:</span>
+                            <span class="result-value">${results.adjustedCapacitivePower.toFixed(2)} kVAr</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>🔧 Ekipman İhtiyacı</h3>
+                        <div class="result-item">
+                            <span class="result-label">Kondansatör Tipi:</span>
+                            <span class="result-value">${results.capacitorType}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Toplam Kondansatör Gücü:</span>
+                            <span class="result-value">${results.adjustedCapacitivePower.toFixed(2)} kVAr</span>
+                        </div>
+                        ${results.reactorRequired ? `
+                        <div class="result-item">
+                            <span class="result-label">⚠️ Reaktör Gerekli:</span>
+                            <span class="result-value">EVET</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Reaktör Gücü (7%):</span>
+                            <span class="result-value">${results.reactorPower.toFixed(2)} kVAr</span>
+                        </div>
+                        ` : '<div class="result-item"><span class="result-label">Reaktör Gerekli:</span><span class="result-value">HAYIR</span></div>'}
+                    </div>
+
+                    <div class="result-card">
+                        <h3>📊 Kademe Konfigürasyonu</h3>
+                        <div class="result-item">
+                            <span class="result-label">Toplam Kademe Sayısı:</span>
+                            <span class="result-value">${results.stageCount} Kademe</span>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <h4 style="color: #667eea; margin-bottom: 15px;">Kademe Detayları:</h4>
+                            ${stagesHTML}
+                        </div>
+                    </div>
+
+                    <div class="info">
+                        <strong>💡 TEKNIK ÖNERİLER ve SİPARİŞ GEREKSİNİMLERİ:</strong>
+                        <ul style="margin-top: 10px; margin-left: 20px;">
+                            <li>Kompanzasyon panosunda ${results.stageCount} kademe kullanılması önerilir</li>
+                            ${results.reactorRequired ? `<li><strong>⚠️ ZORUNLU:</strong> Tüm kademelere ${results.reactorPercentage}% seri reaktör takılmalıdır (Harmonik koruma)</li>` : ''}
+                            ${results.reactorRequired ? '<li><strong>Reaktör Özellikleri:</strong> Demir çekirdekli, sıcaklık korumalı, kondansatör ile seri bağlantı</li>' : ''}
+                            <li>Reaktif Güç Kontrol Rölesi (RGKR/PFC) - 12 kademeye kadar genişletilebilir</li>
+                            <li>Kondansatörler ${results.systemVoltage}V, 50Hz, 3 Faz, IP20/IP54 koruma sınıfı</li>
+                            <li>Her kademe için: Aşırı akım koruma, salter/sigorta, gösterge lambaları</li>
+                            ${results.avgTHD > 15 ? '<li><strong>Harmonik Koruma:</strong> Her kademeye deşarj direnci ve aşırı akım rölesi gereklidir</li>' : ''}
+                            <li>Pano Tipi: IP42/IP54, duvar tipi veya serbest tip</li>
+                            <li>Kontaktörler: AC3 kullanım kategorisi, yardımcı kontaklı</li>
+                            <li>Bağlantı şekli: Üçgen (Delta) bağlantı önerilir</li>
+                        </ul>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>🔌 Ana Besleme ve Pano Girişi</h3>
+                        <div class="result-item">
+                            <span class="result-label">Toplam Panel Akımı:</span>
+                            <span class="result-value">${results.totalPanelCurrent.toFixed(2)} A</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Ana Besleme MCB/Sigorta:</span>
+                            <span class="result-value">${results.mainMCBRating} A (4 Kutup, C veya D Tipi)</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Ana Bara/Kablo Kesiti:</span>
+                            <span class="result-value">${results.mainBusbarCrossSection} mm² (Bakır, NYY veya Bara)</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Akım Trafosu (CT):</span>
+                            <span class="result-value">${Math.ceil(results.totalPanelCurrent * 1.2 / 5) * 5}/5A (Sınıf 1, RGKR için)</span>
+                        </div>
+                        <div style="margin-top: 10px; padding: 8px; background: #fff3cd; border-radius: 5px; font-size: 0.9em;">
+                            <strong>⚠️ DİKKAT:</strong> Ana besleme kablosu tesisatın ana panosundan çekilecek.
+                            Akım trafosunun ${Math.ceil(results.totalPanelCurrent * 1.2 / 5) * 5}/5A değerinde olması ve
+                            RGKR cihazının CT değeri ile uyumlu olması gerekir.
+                        </div>
+                    </div>
+
+                    <div class="result-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <h3 style="color: white; border-color: white;">🛒 TOPLAM SİPARİŞ LİSTESİ</h3>
+                        <div style="background: white; padding: 15px; border-radius: 8px; color: #333; margin-top: 15px;">
+                            <h4 style="color: #667eea; margin-bottom: 15px;">📦 PANO ve EKIPMANLAR</h4>
+                            <div class="result-item">
+                                <span class="result-label">1. Kompanzasyon Panosu:</span>
+                                <span class="result-value">${results.adjustedCapacitivePower.toFixed(2)} kVAr, ${results.stageCount} Kademe, IP42/IP54</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">2. Güç Kondansatörleri:</span>
+                                <span class="result-value">${results.stageCount} Adet (${results.capacitorType})</span>
+                            </div>
+                            ${results.reactorRequired ? `
+                            <div class="result-item" style="background: #fff3cd; padding: 8px; border-radius: 5px;">
+                                <span class="result-label">3. ⚠️ Seri Reaktörler:</span>
+                                <span class="result-value">${results.stageCount} Adet x %${results.reactorPercentage} (Toplam: ${results.reactorPower.toFixed(2)} kVAr)</span>
+                            </div>
+                            ` : ''}
+                            <div class="result-item">
+                                <span class="result-label">${results.reactorRequired ? '4' : '3'}. Güç Kontaktörleri:</span>
+                                <span class="result-value">${results.stageCount} Adet (AC3 tipi, yardımcı kontaklı)</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">${results.reactorRequired ? '5' : '4'}. Reaktif Güç Kontrol Rölesi (RGKR):</span>
+                                <span class="result-value">1 Adet (${results.stageCount} kademe kapasiteli)</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">${results.reactorRequired ? '6' : '5'}. MCB/Sigorta:</span>
+                                <span class="result-value">Ana: ${results.mainMCBRating}A + Kademe Başına (Detaylar yukarıda)</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">${results.reactorRequired ? '7' : '6'}. Şalterler:</span>
+                                <span class="result-value">${results.stageCount + 1} Adet (Ana + Her kademe)</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">${results.reactorRequired ? '8' : '7'}. Akım Trafosu (CT):</span>
+                                <span class="result-value">1 Adet ${Math.ceil(results.totalPanelCurrent * 1.2 / 5) * 5}/5A, Sınıf 1</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">${results.reactorRequired ? '9' : '8'}. Deşarj Dirençleri:</span>
+                                <span class="result-value">${results.stageCount} Adet (Kondansatör ile uyumlu)</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">${results.reactorRequired ? '10' : '9'}. Gösterge ve Sinyal:</span>
+                                <span class="result-value">LED/Lamba + Alarm Kontağı</span>
+                            </div>
+
+                            <h4 style="color: #667eea; margin: 20px 0 15px 0;">🔧 KABLOLAMA</h4>
+                            <div class="result-item">
+                                <span class="result-label">Ana Besleme Kablosu:</span>
+                                <span class="result-value">${results.mainBusbarCrossSection}mm² x 4 (3F+N veya 3F+PE), NYY</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Kademe Kabloları:</span>
+                                <span class="result-value">Her kademe için detaylar yukarıda belirtilmiştir</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Kontrol Kabloları:</span>
+                                <span class="result-value">0.75-1.5mm² NYY/NYM (RGKR, Kontaktör kumanda)</span>
+                            </div>
+
+                            <div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 5px;">
+                                <strong>📦 Paket İçeriği Standartları:</strong><br>
+                                - IEC 60831-1/2 (Güç Kondansatörleri)<br>
+                                - EN 60439-1 / IEC 61439-1/2 (Alçak Gerilim Panoları)<br>
+                                - IEC 61921 (Güç Kondansatör Devre Şalterleri)<br>
+                                ${results.reactorRequired ? '- IEC 60076-6 (Seri Reaktörler)<br>' : ''}
+                                - IEC 60947-4-1 (Kontaktörler)<br>
+                                - ISO 9001 Kalite Belgeli Üretim<br>
+                                - CE Belgeli
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Sonuçlara kaydır
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Grafikleri oluştur
+            setTimeout(() => {
+                createPowerChart(results);
+                createHarmonicChart(results);
+                showNotification('Hesaplama tamamlandı!', 'success');
+            }, 100);
+        }
+
+        function resetAll() {
+            if (confirm('Tüm veriler silinecek. Emin misiniz?')) {
+                motors = [];
+                devices = [];
+                groups = [];
+                updateMotorList();
+                updateDeviceList();
+                updateGroupsList();
+                document.getElementById('results').innerHTML = '';
+
+                // localStorage temizleme
+                try {
+                    if (isLocalStorageAvailable()) {
+                        localStorage.removeItem('kompanzasyonData');
+                    }
+                } catch (e) {
+                    console.warn('localStorage temizlenemedi:', e);
+                }
+
+                // Chart'ları temizle
+                try {
+                    if (powerChart) {
+                        powerChart.destroy();
+                        powerChart = null;
+                    }
+                    if (harmonicChart) {
+                        harmonicChart.destroy();
+                        harmonicChart = null;
+                    }
+                } catch (e) {
+                    console.warn('Chart temizleme hatası:', e);
+                }
+
+                lastResults = null;
+                showNotification('Tüm veriler temizlendi', 'success');
+            }
+        }
+
+        // Bildirim gösterme
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+            document.getElementById('loadingSpinner').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+            document.getElementById('loadingSpinner').classList.remove('active');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.25s ease-out';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                    notification.style.animation = '';
+                }, 250);
+            }, 2500);
+        }
+
+        // LocalStorage'a kaydetme
+        function saveToLocalStorage() {
+            if (!isLocalStorageAvailable()) {
+                showNotification('localStorage kullanılamıyor (Gizli mod aktif olabilir)', 'error');
+                return;
+            }
+
+            try {
+                const data = {
+                    motors,
+                    devices,
+                    groups,
+                    systemParams: {
+                        voltage: document.getElementById('systemVoltage').value,
+                        frequency: document.getElementById('systemFrequency').value,
+                        currentPF: document.getElementById('currentPowerFactor').value,
+                        targetPF: document.getElementById('targetPowerFactor').value,
+                        designMode: document.getElementById('designMode').value,
+                        totalActivePowerInput: document.getElementById('totalActivePowerInput').value,
+                        powerBasedCurrentPF: document.getElementById('powerBasedCurrentPF').value,
+                        powerBasedHarmonicLoad: document.getElementById('powerBasedHarmonicLoad').value
+                    },
+                    timestamp: new Date().toISOString()
+                };
+
+                localStorage.setItem('kompanzasyonData', JSON.stringify(data));
+                showNotification('Veriler tarayıcıya kaydedildi', 'success');
+            } catch (e) {
+                console.error('Kaydetme hatası:', e);
+                showNotification('Veri kaydedilemedi: ' + e.message, 'error');
+            }
+        }
+
+        // LocalStorage'dan yükleme
+        function loadFromLocalStorage() {
+            if (!isLocalStorageAvailable()) {
+                showNotification('localStorage kullanılamıyor', 'error');
+                return;
+            }
+
+            try {
+                const savedData = localStorage.getItem('kompanzasyonData');
+                if (!savedData) {
+                    showNotification('Kaydedilmiş veri bulunamadı', 'error');
+                    return;
+                }
+
+                const data = JSON.parse(savedData);
+                motors = data.motors || [];
+                devices = data.devices || [];
+                groups = data.groups || [];
+
+                if (data.systemParams) {
+                    document.getElementById('systemVoltage').value = data.systemParams.voltage;
+                    document.getElementById('systemFrequency').value = data.systemParams.frequency;
+                    document.getElementById('currentPowerFactor').value = data.systemParams.currentPF;
+                    document.getElementById('targetPowerFactor').value = data.systemParams.targetPF;
+
+                    if (data.systemParams.designMode) {
+                        document.getElementById('designMode').value = data.systemParams.designMode;
+                    }
+                    if (data.systemParams.totalActivePowerInput) {
+                        document.getElementById('totalActivePowerInput').value = data.systemParams.totalActivePowerInput;
+                    }
+                    if (data.systemParams.powerBasedCurrentPF) {
+                        document.getElementById('powerBasedCurrentPF').value = data.systemParams.powerBasedCurrentPF;
+                    }
+                    if (data.systemParams.powerBasedHarmonicLoad) {
+                        document.getElementById('powerBasedHarmonicLoad').value = data.systemParams.powerBasedHarmonicLoad;
+                    }
+                }
+
+                updateMotorList();
+                updateDeviceList();
+                updateGroupsList();
+                updateDesignMode(); // Tasarım modunu güncelle
+
+                const date = new Date(data.timestamp);
+                showNotification(`Veriler yüklendi (${date.toLocaleString('tr-TR')})`, 'success');
+            } catch (error) {
+                showNotification('Veri yükleme hatası', 'error');
+                console.error(error);
+            }
+        }
+
+        // JSON olarak dışa aktarma
+        function exportToJSON() {
+            const data = {
+                motors,
+                devices,
+                groups,
+                systemParams: {
+                    voltage: document.getElementById('systemVoltage').value,
+                    frequency: document.getElementById('systemFrequency').value,
+                    currentPF: document.getElementById('currentPowerFactor').value,
+                    targetPF: document.getElementById('targetPowerFactor').value,
+                    designMode: document.getElementById('designMode').value,
+                    totalActivePowerInput: document.getElementById('totalActivePowerInput').value,
+                    powerBasedCurrentPF: document.getElementById('powerBasedCurrentPF').value,
+                    powerBasedHarmonicLoad: document.getElementById('powerBasedHarmonicLoad').value
+                },
+                timestamp: new Date().toISOString(),
+                version: '2.0'
+            };
+
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `kompanzasyon-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            showNotification('JSON dosyası indirildi', 'success');
+        }
+
+        // JSON'dan içe aktarma
+        function importFromJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    motors = data.motors || [];
+                    devices = data.devices || [];
+                    groups = data.groups || [];
+
+                    if (data.systemParams) {
+                        document.getElementById('systemVoltage').value = data.systemParams.voltage;
+                        document.getElementById('systemFrequency').value = data.systemParams.frequency;
+                        document.getElementById('currentPowerFactor').value = data.systemParams.currentPF;
+                        document.getElementById('targetPowerFactor').value = data.systemParams.targetPF;
+
+                        if (data.systemParams.designMode) {
+                            document.getElementById('designMode').value = data.systemParams.designMode;
+                        }
+                        if (data.systemParams.totalActivePowerInput) {
+                            document.getElementById('totalActivePowerInput').value = data.systemParams.totalActivePowerInput;
+                        }
+                        if (data.systemParams.powerBasedCurrentPF) {
+                            document.getElementById('powerBasedCurrentPF').value = data.systemParams.powerBasedCurrentPF;
+                        }
+                        if (data.systemParams.powerBasedHarmonicLoad) {
+                            document.getElementById('powerBasedHarmonicLoad').value = data.systemParams.powerBasedHarmonicLoad;
+                        }
+                    }
+
+                    updateMotorList();
+                    updateDeviceList();
+                    updateGroupsList();
+                    updateDesignMode(); // Tasarım modunu güncelle
+
+                    showNotification('JSON dosyası başarıyla yüklendi', 'success');
+                } catch (error) {
+                    showNotification('JSON dosyası okunamadı', 'error');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // Grafik oluşturma
+        function createPowerChart(results) {
+            const ctx = document.getElementById('powerChart');
+            if (!ctx) {
+                console.warn('powerChart canvas bulunamadı');
+                return;
+            }
+
+            // Güvenli chart silme
+            try {
+                if (powerChart) {
+                    powerChart.destroy();
+                }
+            } catch (e) {
+                console.warn('Chart destroy hatası:', e);
+            }
+
+            // Chart.js yüklü mü kontrol et
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js kütüphanesi yüklenmedi');
+                return;
+            }
+
+            try {
+                powerChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Aktif Güç', 'Mevcut Reaktif', 'Hedef Reaktif', 'Gerekli Kapasitif'],
+                    datasets: [{
+                        label: 'Güç (kW/kVAr)',
+                        data: [
+                            results.totalActivePower,
+                            results.currentReactivePower,
+                            results.targetReactivePower,
+                            results.adjustedCapacitivePower
+                        ],
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(245, 87, 108, 0.8)',
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(102, 126, 234, 1)',
+                            'rgba(245, 87, 108, 1)',
+                            'rgba(40, 167, 69, 1)',
+                            'rgba(255, 193, 7, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Güç Analizi',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Güç (kW/kVAr)'
+                            }
+                        }
+                    }
+                }
+            });
+            } catch (e) {
+                console.error('Chart oluşturma hatası:', e);
+                showNotification('Grafik oluşturulamadı', 'error');
+            }
+        }
+
+        function createHarmonicChart(results) {
+            const ctx = document.getElementById('harmonicChart');
+            if (!ctx) {
+                console.warn('harmonicChart canvas bulunamadı');
+                return;
+            }
+
+            // Güvenli chart silme
+            try {
+                if (harmonicChart) {
+                    harmonicChart.destroy();
+                }
+            } catch (e) {
+                console.warn('Chart destroy hatası:', e);
+            }
+
+            // Chart.js yüklü mü kontrol et
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js kütüphanesi yüklenmedi');
+                return;
+            }
+
+            try {
+                harmonicChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Harmonik THD %', 'Temiz Güç %'],
+                    datasets: [{
+                        data: [results.avgTHD, 100 - results.avgTHD],
+                        backgroundColor: [
+                            'rgba(245, 87, 108, 0.8)',
+                            'rgba(40, 167, 69, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(245, 87, 108, 1)',
+                            'rgba(40, 167, 69, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Harmonik Analizi',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            });
+            } catch (e) {
+                console.error('Harmonik chart oluşturma hatası:', e);
+            }
+        }
+
+        // PDF rapor oluşturma
+        function generatePDF() {
+            if (!lastResults) {
+                showNotification('Önce hesaplama yapmalısınız', 'error');
+                return;
+            }
+
+            showNotification('PDF raporu oluşturuluyor...', 'info');
+
+            setTimeout(() => {
+                window.print();
+                showNotification('PDF için yazdırma penceresi açıldı', 'success');
+            }, 500);
+        }
+    </script>
+</body>
+</html>
